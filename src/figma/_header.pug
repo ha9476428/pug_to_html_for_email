@@ -1,0 +1,8 @@
+//- Nội dung demo "Header" — partial dùng chung cho mọi email (src/partials/header.pug),
+//- không phải mixin trong src/mixins/.
++section({ padding: ['lg', 'lg', 'sm'] })
+  +heading(2) Header
+  +spacer('xs')
+  +text({ color: theme.color.textMuted }) Header mặc định dùng trong mọi email — src/partials/header.pug
+
+include ../partials/header
