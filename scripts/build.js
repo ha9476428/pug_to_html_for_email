@@ -48,7 +48,7 @@ function listEmails() {
 function beautify(html) {
   const { html: fmt } = require('js-beautify');
   return fmt(html, {
-    indent_size: 2,
+    indent_size: 4,
     wrap_line_length: 0,
     preserve_newlines: false,
     // giữ nguyên nội dung có khoảng trắng quan trọng
@@ -56,6 +56,60 @@ function beautify(html) {
     content_unformatted: ['pre', 'textarea', 'style'],
     extra_liners: [],
   });
+}
+
+/**
+ * js-beautify không tách comment vùng (xem mixin +comment) ra dòng riêng —
+ * nó dính liền vào thẻ đứng trước/sau trên cùng 1 dòng, không có thụt lề.
+ * Hàm này tách từng comment ra dòng riêng, giữ đúng mức thụt lề của dòng
+ * chứa nó, và chèn thêm 1 dòng trống trước mỗi comment "S" (start).
+ */
+const VOID_TAGS = new Set([
+  'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr',
+]);
+const OPEN_TAG_RE = /<([a-zA-Z][\w-]*)(?:\s[^>]*)?>$/;
+
+/** true nếu `text` kết thúc bằng 1 thẻ mở (không phải void) — nội dung theo sau nó là con, cần thụt thêm 1 cấp. */
+function opensNewLevel(text) {
+  const m = text.match(OPEN_TAG_RE);
+  return !!m && !VOID_TAGS.has(m[1].toLowerCase());
+}
+
+function formatRegionComments(html) {
+  const COMMENT_RE = /<!-- .+? : [SE] -->/g;
+  const lines = html.split('\n');
+  const out = [];
+
+  for (const line of lines) {
+    if (!COMMENT_RE.test(line)) {
+      out.push(line);
+      continue;
+    }
+    let indent = line.match(/^[ \t]*/)[0];
+
+    COMMENT_RE.lastIndex = 0;
+    let lastIndex = 0;
+    let match;
+    const segments = [];
+    while ((match = COMMENT_RE.exec(line))) {
+      if (match.index > lastIndex) segments.push(line.slice(lastIndex, match.index));
+      segments.push(match[0]);
+      lastIndex = COMMENT_RE.lastIndex;
+    }
+    if (lastIndex < line.length) segments.push(line.slice(lastIndex));
+
+    for (const seg of segments) {
+      const trimmed = seg.trim();
+      if (!trimmed) continue;
+      if (/ : S -->$/.test(trimmed)) out.push('');
+      out.push(indent + trimmed);
+      // Thẻ mở (vd `<td ...>`) vừa được tách ra dòng riêng => nội dung/comment theo sau nó
+      // (còn lại trên cùng dòng gốc) là con của thẻ đó, cần thụt thêm 1 cấp (4 space).
+      if (opensNewLevel(trimmed)) indent += '    ';
+    }
+  }
+
+  return out.join('\n');
 }
 
 function buildOne(rel, locals) {
@@ -79,10 +133,10 @@ function buildOne(rel, locals) {
     insertPreservedExtraCss: false,
   });
 
-  if (PRETTY) html = beautify(html);
-
-  // Chèn 1 dòng trống trước mỗi comment đánh dấu vùng (xem mixin +comment) để dễ dò trong View Source.
-  html = html.replace(/<!-- (.+?) : S -->/g, '\n\n<!-- $1 : S -->');
+  if (PRETTY) {
+    html = beautify(html);
+    html = formatRegionComments(html);
+  }
 
   const out = path.join(DIST, `${name}.html`);
   fs.mkdirSync(path.dirname(out), { recursive: true });
