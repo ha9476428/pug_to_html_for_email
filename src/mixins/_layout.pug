@@ -18,7 +18,6 @@ mixin container(width)
 //-   +section({ bg: theme.color.primary, padding: ['xl', 'lg'], align: 'center' })
 mixin section(opts)
   - var o = Object.assign({ bg: 'transparent', padding: ['lg', 'lg'], align: 'left' }, opts)
-  //- class/attr truyền vào (vd: class="mobile-pad") được gắn lên <td>
   table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0")
     tr
       td(align=o.align valign="top" bgcolor=(o.bg !== 'transparent' ? o.bg : undefined) style=`${h.pad(...o.padding)}${o.bg !== 'transparent' ? `background-color:${o.bg};` : ''}text-align:${o.align};`)&attributes(attributes)
@@ -66,7 +65,7 @@ mixin columns(opts)
 mixin column(width, opts)
   - var o = Object.assign({ padding: ['sm', 'sm'], valign: 'top', align: 'left' }, opts)
   <!--[if mso]><td valign="#{o.valign}" width="#{width}" style="width:#{width}px;"><![endif]-->
-  div(class="col" style=`display:inline-block;width:100%;max-width:${width}px;vertical-align:${o.valign};text-align:${o.align};`)
+  div(style=`display:inline-block;width:100%;max-width:${width}px;vertical-align:${o.valign};text-align:${o.align};`)
     table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0")
       tr
         td(valign=o.valign style=`${h.pad(...o.padding)}text-align:${o.align};`)

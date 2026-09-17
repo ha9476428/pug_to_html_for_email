@@ -69,14 +69,14 @@ function buildOne(rel, locals) {
   });
 
   let html = juice(rendered, {
-    removeStyleTags: true, // xoá <style> đã inline (trừ <style data-embed>)
-    preserveMediaQueries: true,
-    preserveFontFaces: true,
+    removeStyleTags: true, // xoá toàn bộ <style> sau khi inline — không style nào sót lại trong <head>
+    preserveMediaQueries: false,
+    preserveFontFaces: false,
     preserveImportant: true,
     applyWidthAttributes: true,
     applyHeightAttributes: true,
     applyAttributesTableElements: true,
-    insertPreservedExtraCss: true,
+    insertPreservedExtraCss: false,
   });
 
   if (PRETTY) html = beautify(html);

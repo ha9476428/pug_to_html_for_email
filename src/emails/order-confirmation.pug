@@ -4,15 +4,9 @@ block vars
   - var title = 'Xác nhận đơn hàng #' + order.id
   - var preheader = `Đơn hàng #${order.id} đã được xác nhận. Tổng: ${order.total}`
 
-//- CSS riêng cho email này — juice sẽ inline vào thẻ có class tương ứng.
-//- Vẫn dùng được biến theme qua #{...}
-block styles
-  style.
-    .badge { display: inline-block; padding: 4px 12px; border-radius: #{theme.radius.pill}px; background-color: #E6F8F3; color: #{theme.color.secondary}; font-family: #{theme.font.family}; font-size: #{theme.font.size.xs}px; font-weight: #{theme.font.weight.semibold}; }
-
 block content
   +section({ padding: ['lg', 'lg', 0] })
-    span.badge Đã xác nhận
+    span(style=`display:inline-block;padding:4px 12px;border-radius:${theme.radius.pill}px;background-color:#E6F8F3;color:${theme.color.secondary};font-family:${theme.font.family};font-size:${theme.font.size.xs}px;font-weight:${theme.font.weight.semibold};`) Đã xác nhận
     +spacer('md')
     +heading(2) Cảm ơn bạn đã đặt hàng!
     +spacer('sm')
