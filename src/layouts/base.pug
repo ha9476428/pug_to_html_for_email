@@ -54,8 +54,11 @@ html(lang=lang dir="ltr" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schem
         tr
           td(align="center" valign="top" style=h.pad('lg', 'sm'))
             +container
-              block header
-                include ../partials/header
-              block content
-              block footer
-                include ../partials/footer
+              +comment('HEADER')
+                block header
+                  include ../partials/header
+              +comment('CONTENT')
+                block content
+              +comment('FOOTER')
+                block footer
+                  include ../partials/footer

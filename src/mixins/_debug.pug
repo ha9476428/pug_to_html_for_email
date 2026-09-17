@@ -1,0 +1,17 @@
+//- ============================================================
+//- MIXIN GHI CHÚ VÙNG (region comment) — bọc 1 khối nội dung bằng
+//- cặp HTML comment start/end, để dễ dò section khi xem View Source
+//- của HTML đã build (hoặc khi bàn giao HTML cho người không code).
+//-
+//-   +comment('HEADER')
+//-     include ../partials/header
+//-
+//- Render ra:
+//-   <!-- HEADER : S -->
+//-   ...nội dung...
+//-   <!-- HEADER : E -->
+//- ============================================================
+mixin comment(label)
+  != `<!-- ${label} : S -->`
+  block
+  != `<!-- ${label} : E -->`

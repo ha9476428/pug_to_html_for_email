@@ -81,6 +81,9 @@ function buildOne(rel, locals) {
 
   if (PRETTY) html = beautify(html);
 
+  // Chèn 1 dòng trống trước mỗi comment đánh dấu vùng (xem mixin +comment) để dễ dò trong View Source.
+  html = html.replace(/<!-- (.+?) : S -->/g, '\n\n<!-- $1 : S -->');
+
   const out = path.join(DIST, `${name}.html`);
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, html);
