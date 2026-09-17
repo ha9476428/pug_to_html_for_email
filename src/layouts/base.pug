@@ -1,0 +1,78 @@
+//- ============================================================
+//- LAYOUT GỐC — mọi email `extends` file này.
+//-
+//- Các block có thể ghi đè ở template con:
+//-   block vars       -> khai báo biến trang (title, preheader...)
+//-   block styles     -> CSS riêng của email (sẽ được inline khi build)
+//-   block header     -> mặc định: partials/header
+//-   block content    -> nội dung chính (BẮT BUỘC)
+//-   block footer     -> mặc định: partials/footer
+//-
+//- Biến dùng chung có sẵn ở mọi nơi: `theme`, `h` (xem src/config)
+//- ============================================================
+include ../mixins/index
+
+//- Template con khai báo biến trong block này; dòng bên dưới là giá trị mặc định.
+block vars
+- var title = title || theme.brand.name
+- var preheader = preheader || ''
+- var lang = lang || 'vi'
+- var unsubscribeUrl = unsubscribeUrl || ''
+
+doctype html
+html(lang=lang dir="ltr" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office")
+  head
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1")
+    meta(http-equiv="X-UA-Compatible" content="IE=edge")
+    meta(name="x-apple-disable-message-reformatting")
+    meta(name="format-detection" content="telephone=no, date=no, address=no, email=no, url=no")
+    meta(name="color-scheme" content="light")
+    meta(name="supported-color-schemes" content="light")
+    title= title
+
+    //- Outlook: DPI 96 để ảnh không bị phóng to + ép font fallback
+    <!--[if mso]>
+    <noscript><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
+    <style>table,td,div,h1,h2,h3,p,a,span{font-family:!{theme.font.msoFallback} !important;}table{border-collapse:collapse;}</style>
+    <![endif]-->
+
+    //- Web font: ẩn khỏi Outlook (tránh lỗi rơi về Times New Roman)
+    if theme.font.webfontUrl
+      <!--[if !mso]><!-->
+      link(href=theme.font.webfontUrl rel="stylesheet" type="text/css")
+      <!--<![endif]-->
+
+    //- data-embed: juice GIỮ NGUYÊN khối này trong <head> (không inline)
+    style(data-embed).
+      :root { color-scheme: light; supported-color-schemes: light; }
+      body { margin: 0 !important; padding: 0 !important; width: 100% !important; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+      table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+      img { -ms-interpolation-mode: bicubic; }
+      a[x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; font-size: inherit !important; font-family: inherit !important; font-weight: inherit !important; line-height: inherit !important; }
+      #MessageViewBody a { color: inherit; text-decoration: none; font-size: inherit; font-family: inherit; font-weight: inherit; line-height: inherit; }
+      u + #body a { color: inherit; text-decoration: none; }
+      @media only screen and (max-width: #{theme.width - 1}px) {
+        .col { max-width: 100% !important; }
+        .mobile-hide { display: none !important; max-height: 0 !important; overflow: hidden !important; }
+        .mobile-center { text-align: center !important; }
+        .mobile-pad { padding-left: #{theme.space.md}px !important; padding-right: #{theme.space.md}px !important; }
+      }
+
+    //- CSS riêng của từng email (template con viết `style.` trong block này)
+    block styles
+
+  body#body(style=`margin:0;padding:0;width:100%;word-spacing:normal;background-color:${theme.color.bgBody};`)
+    if preheader
+      +preheader(preheader)
+
+    div(role="article" aria-roledescription="email" aria-label=title lang=lang style=`background-color:${theme.color.bgBody};`)
+      table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor=theme.color.bgBody style=`background-color:${theme.color.bgBody};`)
+        tr
+          td(align="center" valign="top" style=h.pad('lg', 'sm'))
+            +container
+              block header
+                include ../partials/header
+              block content
+              block footer
+                include ../partials/footer

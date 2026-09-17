@@ -1,0 +1,29 @@
+{
+  "name": "pug_to_html_for_email",
+  "version": "1.0.0",
+  "description": "Email HTML templates viết bằng Pug (layout / block / mixin), tương thích Outlook, build ra HTML đã inline CSS.",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "build:pretty": "node scripts/build.js --pretty",
+    "dev": "node scripts/build.js --watch",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
+  },
+  "keywords": [
+    "email",
+    "pug",
+    "outlook",
+    "html-email",
+    "mjml-alternative"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "chokidar": "^5.0.0",
+    "js-beautify": "^2.0.3",
+    "juice": "^12.1.3",
+    "pug": "^3.0.4"
+  }
+}

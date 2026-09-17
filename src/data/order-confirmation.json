@@ -1,0 +1,12 @@
+{
+  "order": {
+    "id": "DH20260917",
+    "items": [
+      { "name": "Áo thun basic", "qty": 2, "price": "398.000 ₫" },
+      { "name": "Quần jean slim", "qty": 1, "price": "650.000 ₫" }
+    ],
+    "shipping": "30.000 ₫",
+    "total": "1.078.000 ₫",
+    "trackingUrl": "https://example.com/orders/DH20260917"
+  }
+}

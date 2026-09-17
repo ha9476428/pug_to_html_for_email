@@ -1,0 +1,13 @@
+//- Footer mặc định: thông tin liên hệ + huỷ đăng ký
+//- `unsubscribeUrl` có thể khai báo trong block vars của template con
++section({ bg: theme.color.bgBody, padding: ['lg', 'lg'], align: 'center' })
+  +text({ size: 'xs', color: theme.color.textMuted, align: 'center' })
+    | © #{new Date().getFullYear()} #{theme.brand.name}. #{theme.brand.address}
+  +spacer('xs')
+  +text({ size: 'xs', color: theme.color.textMuted, align: 'center' })
+    | Cần hỗ trợ? Liên hệ&nbsp;
+    +link(`mailto:${theme.brand.supportEmail}`, { color: theme.color.textMuted }) #{theme.brand.supportEmail}
+  if unsubscribeUrl
+    +spacer('xs')
+    +text({ size: 'xs', color: theme.color.textMuted, align: 'center' })
+      +link(unsubscribeUrl, { color: theme.color.textMuted }) Huỷ nhận email
