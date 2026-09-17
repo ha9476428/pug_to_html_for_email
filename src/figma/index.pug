@@ -1,6 +1,9 @@
-//- Trang TỔNG HỢP DUY NHẤT — gộp toàn bộ component trong src/figma/ vào 1 trang,
-//- giống trang "component library" trong Figma. Include nội dung từ từng `_xxx.pug`
-//- (xem _README.md) — thêm component mới thì thêm 1 `include` vào đây.
+//- ⚠️ FILE TỰ SINH — đừng sửa tay, sẽ bị ghi đè ở lần build kế tiếp.
+//- Xem _README.md để biết cách thêm component mới.
+//-
+//- Trang TỔNG HỢP DUY NHẤT — gộp toàn bộ component trong src/figma/,
+//- giống trang "component library" trong Figma. Tự quét mọi file
+//- _*.pug trong thư mục này mỗi lần build.
 extends ../layouts/base
 
 block vars
@@ -13,22 +16,22 @@ block content
     +text({ color: theme.color.textMuted }) Tổng hợp toàn bộ component trong src/figma/.
 
   +divider
-  include _header
+  include ./_00-header
   +divider
-  include _colors
+  include ./_10-colors
   +divider
-  include _typography
+  include ./_20-typography
   +divider
-  include _buttons
+  include ./_30-buttons
   +divider
-  include _link
+  include ./_40-link
   +divider
-  include _columns
+  include ./_50-columns
   +divider
-  include _info-table
+  include ./_60-info-table
   +divider
-  include _comment-markers
+  include ./_70-comment-markers
   +divider
-  include _image
+  include ./_80-image
   +divider
-  include _footer
+  include ./_90-footer

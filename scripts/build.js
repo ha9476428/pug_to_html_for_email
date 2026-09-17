@@ -172,6 +172,48 @@ function writeIndex(emailNames, figmaNames) {
   );
 }
 
+/**
+ * Tự sinh src/figma/index.pug — quét mọi `_*.pug` trong src/figma/ (theo
+ * thứ tự alphabet) và include hết vào 1 trang tổng hợp. Thêm 1 component
+ * mới (`_ten.pug`) là tự xuất hiện ở đây, không cần sửa tay.
+ *
+ * Chỉ ghi file khi nội dung thực sự đổi — tránh vòng lặp vô hạn với
+ * chokidar (ghi file trong src/ mà đang bị chính nó watch).
+ */
+function syncFigmaIndex() {
+  if (!fs.existsSync(FIGMA)) return;
+
+  const partials = fs
+    .readdirSync(FIGMA)
+    .filter((f) => f.endsWith('.pug') && f.startsWith('_'))
+    .sort();
+
+  const includes = partials.map((f) => `  +divider\n  include ./${f.replace(/\.pug$/, '')}`).join('\n');
+
+  const content = `//- ⚠️ FILE TỰ SINH — đừng sửa tay, sẽ bị ghi đè ở lần build kế tiếp.
+//- Xem _README.md để biết cách thêm component mới.
+//-
+//- Trang TỔNG HỢP DUY NHẤT — gộp toàn bộ component trong src/figma/,
+//- giống trang "component library" trong Figma. Tự quét mọi file
+//- _*.pug trong thư mục này mỗi lần build.
+extends ../layouts/base
+
+block vars
+  - var title = 'Component Catalog — Overview'
+
+block content
+  +section({ padding: ['xl', 'lg', 'md'] })
+    +heading(1) Component Catalog
+    +spacer('xs')
+    +text({ color: theme.color.textMuted }) Tổng hợp toàn bộ component trong src/figma/.
+${includes ? `\n${includes}\n` : ''}`;
+
+  const out = path.join(FIGMA, 'index.pug');
+  if (!fs.existsSync(out) || fs.readFileSync(out, 'utf8') !== content) {
+    fs.writeFileSync(out, content);
+  }
+}
+
 function buildAll() {
   const t0 = Date.now();
   fs.mkdirSync(DIST, { recursive: true });
@@ -190,6 +232,7 @@ function buildAll() {
     }
   }
 
+  syncFigmaIndex();
   const figmaFiles = listPug(FIGMA);
   if (figmaFiles.length) {
     console.log('\nBuilding figma components...');

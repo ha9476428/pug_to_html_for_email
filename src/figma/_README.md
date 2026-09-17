@@ -8,20 +8,40 @@ thấy ở đây đúng với sản phẩm cuối.
 - Build ra 1 trang duy nhất: `dist/figma/index.html` — gộp toàn bộ
   component, giống trang "component library" trong Figma.
 
-## Cấu trúc
-
-- `_ten.pug` — nội dung demo của 1 component. Bắt đầu bằng `_` nên
-  KHÔNG tự build thành trang riêng (giống quy ước trong `src/mixins/`).
-- `index.pug` — `extends ../layouts/base`, rồi `include` lần lượt
-  từng `_ten.pug`, ngăn cách bằng `+divider`.
-
 "Component" ở đây không chỉ là mixin trong `src/mixins/` — partial dùng
 chung trong `src/partials/` (`header.pug`, `footer.pug`) cũng là
-component, nên cũng có demo riêng: `_header.pug`, `_footer.pug`.
+component, nên cũng có demo riêng.
+
+## index.pug là file TỰ SINH — đừng sửa tay
+
+Mỗi lần build, script tự quét mọi file `_*.pug` trong thư mục này
+(theo thứ tự alphabet) và ghi đè `index.pug` để include hết vào 1
+trang tổng hợp. **Thêm 1 component mới = chỉ cần tạo file `_ten.pug`,
+không cần đụng vào `index.pug`.**
+
+Vì thứ tự dựa trên tên file, dùng **tiền tố số** để kiểm soát thứ tự
+hiển thị:
+
+```
+_00-header.pug
+_10-colors.pug
+_20-typography.pug
+_30-buttons.pug
+_40-link.pug
+_50-columns.pug
+_60-info-table.pug
+_70-comment-markers.pug
+_80-image.pug
+_90-footer.pug
+```
+
+Cách nhau 10 để dễ chèn thêm ở giữa (vd `_35-badge.pug` để chèn giữa
+buttons và link) mà không phải đổi số hàng loạt.
 
 ## Thêm component mới
 
-1. Tạo `_ten.pug`. Nếu demo 1 mixin (`src/mixins/`):
+1. Tạo `_NN-ten.pug` (chọn số phù hợp vị trí muốn hiển thị). Nếu demo
+   1 mixin (`src/mixins/`):
 
    ```pug
    +section({ padding: ['lg', 'lg', 'sm'] })
@@ -45,4 +65,5 @@ component, nên cũng có demo riêng: `_header.pug`, `_footer.pug`.
    include ../partials/ten
    ```
 
-2. Thêm vào `index.pug`: `+divider` rồi `include _ten`.
+2. Chạy `npm run dev` (hoặc `npm run build`) — component tự xuất hiện
+   trong `figma/index.html`, không cần sửa gì thêm.
