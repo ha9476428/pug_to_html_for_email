@@ -4,24 +4,16 @@ Component demo cho design review — KHÔNG phải email để gửi. Build qua
 cùng pipeline Pug -> inline CSS (juice) như email thật, nên những gì
 thấy ở đây đúng với sản phẩm cuối.
 
-- `npm run dev` -> mở `http://localhost:3000` -> mục "Figma components".
-- Mỗi component build ra `dist/figma/<tên>.html`.
-- `dist/figma/index.html` — trang tổng hợp TẤT CẢ component vào 1 trang
-  để xem nhanh, giống trang "component library" trong Figma.
+- `npm run dev` -> mở `http://localhost:3000` -> link "figma/index".
+- Build ra 1 trang duy nhất: `dist/figma/index.html` — gộp toàn bộ
+  component, giống trang "component library" trong Figma.
 
-## Cấu trúc: nội dung tách riêng khỏi trang
+## Cấu trúc
 
-Mỗi component có 2 file:
-
-- `_ten.pug` — chỉ nội dung demo (không `extends`, không `block`).
-  Bắt đầu bằng `_` nên KHÔNG build thành trang riêng (giống quy ước
-  trong `src/mixins/`).
-- `ten.pug` — trang đứng riêng, `extends ../layouts/base` rồi
-  `include _ten`.
-
-`index.pug` include lại toàn bộ `_ten.pug` theo thứ tự, nối bằng
-`+divider`, để có 1 trang tổng hợp — sửa nội dung ở `_ten.pug` thì cả
-trang riêng lẫn trang tổng hợp đều cập nhật theo, không cần sửa 2 nơi.
+- `_ten.pug` — nội dung demo của 1 component. Bắt đầu bằng `_` nên
+  KHÔNG tự build thành trang riêng (giống quy ước trong `src/mixins/`).
+- `index.pug` — `extends ../layouts/base`, rồi `include` lần lượt
+  từng `_ten.pug`, ngăn cách bằng `+divider`.
 
 ## Thêm component mới
 
@@ -37,16 +29,4 @@ trang riêng lẫn trang tổng hợp đều cập nhật theo, không cần s�
      +mixinName(...)
    ```
 
-2. Tạo `ten.pug`:
-
-   ```pug
-   extends ../layouts/base
-
-   block vars
-     - var title = 'Tên component — mixinName()'
-
-   block content
-     include _ten
-   ```
-
-3. Thêm `include _ten` (kèm `+divider` trước nó) vào `index.pug`.
+2. Thêm vào `index.pug`: `+divider` rồi `include _ten`.
