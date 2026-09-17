@@ -1,0 +1,30 @@
+//- Trang TỔNG HỢP — gộp toàn bộ component trong src/figma/ vào 1 trang để xem nhanh,
+//- giống trang "component library" trong Figma. Include lại đúng nội dung `_xxx.pug`
+//- mà từng trang riêng (colors.pug, buttons.pug...) đang dùng — sửa 1 chỗ, cả 2 nơi cùng cập nhật.
+extends ../layouts/base
+
+block vars
+  - var title = 'Component Catalog — Overview'
+
+block content
+  +section({ padding: ['xl', 'lg', 'md'] })
+    +heading(1) Component Catalog
+    +spacer('xs')
+    +text({ color: theme.color.textMuted }) Tổng hợp toàn bộ component trong src/figma/. Xem riêng từng component tại trang tương ứng (vd figma/buttons.html).
+
+  +divider
+  include _colors
+  +divider
+  include _typography
+  +divider
+  include _buttons
+  +divider
+  include _link
+  +divider
+  include _columns
+  +divider
+  include _info-table
+  +divider
+  include _comment-markers
+  +divider
+  include _image

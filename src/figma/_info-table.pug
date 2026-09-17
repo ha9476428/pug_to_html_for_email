@@ -1,0 +1,11 @@
+//- Nội dung demo "Info Table" — dùng chung bởi info-table.pug (trang riêng) và index.pug (trang tổng hợp).
++section({ padding: ['lg', 'lg', 'sm'] })
+  +heading(2) Info Table
+  +spacer('xs')
+  +text({ color: theme.color.textMuted }) infoTable() + infoRow(label, value) — src/mixins/_content.pug
+
++section({ padding: [0, 'lg', 'lg'] })
+  +infoTable
+    +infoRow('Nhãn', 'Giá trị')
+    +infoRow('Phí vận chuyển', '30.000 ₫')
+    +infoRow('Tổng cộng', '1.250.000 ₫', { strong: true })

@@ -15,6 +15,8 @@ const juice = require('juice').default;
 const ROOT = path.resolve(__dirname, '..');
 const SRC = path.join(ROOT, 'src');
 const EMAILS = path.join(SRC, 'emails');
+// Component demo cho Figma/design review — mỗi component 1 file, KHÔNG phải email để gửi.
+const FIGMA = path.join(SRC, 'figma');
 const DATA = path.join(SRC, 'data');
 const DIST = path.join(ROOT, 'dist');
 const CONFIG = path.join(SRC, 'config');
@@ -38,9 +40,11 @@ function loadData(name) {
   return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : {};
 }
 
-function listEmails() {
+/** Liệt kê file .pug (không tính partial bắt đầu bằng `_`) trong 1 thư mục. */
+function listPug(dir) {
+  if (!fs.existsSync(dir)) return [];
   return fs
-    .readdirSync(EMAILS, { recursive: true })
+    .readdirSync(dir, { recursive: true })
     .filter((f) => f.endsWith('.pug') && !path.basename(f).startsWith('_'))
     .map((f) => f.split(path.sep).join('/'));
 }
@@ -112,13 +116,17 @@ function formatRegionComments(html) {
   return out.join('\n');
 }
 
-function buildOne(rel, locals) {
-  const name = rel.replace(/\.pug$/, '');
-  const file = path.join(EMAILS, rel);
+/**
+ * @param srcDir  thư mục chứa file .pug nguồn (EMAILS hoặc FIGMA)
+ * @param rel     đường dẫn .pug tương đối trong srcDir, vd "welcome.pug"
+ * @param outName tên dùng để ghi ra dist/ + hiện trong index, vd "welcome" hoặc "figma/buttons"
+ */
+function buildOne(srcDir, rel, locals, outName) {
+  const file = path.join(srcDir, rel);
   const rendered = pug.renderFile(file, {
     basedir: SRC, // cho phép include /mixins/... (đường dẫn tuyệt đối từ src)
     ...locals,
-    ...loadData(name),
+    ...loadData(rel.replace(/\.pug$/, '')),
     cache: false,
   });
 
@@ -138,23 +146,29 @@ function buildOne(rel, locals) {
     html = formatRegionComments(html);
   }
 
-  const out = path.join(DIST, `${name}.html`);
+  const out = path.join(DIST, `${outName}.html`);
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, html);
 
   const kb = Buffer.byteLength(html) / 1024;
   const warn = kb > GMAIL_CLIP_KB ? `  ⚠️  > ${GMAIL_CLIP_KB}KB, Gmail sẽ cắt email` : '';
-  console.log(`  ✓ ${name}.html  (${kb.toFixed(1)} KB)${warn}`);
-  return name;
+  console.log(`  ✓ ${outName}.html  (${kb.toFixed(1)} KB)${warn}`);
+  return outName;
 }
 
-function writeIndex(names) {
-  const items = names.map((n) => `<li><a href="${n}.html">${n}</a></li>`).join('');
+function writeIndex(emailNames, figmaNames) {
+  const list = (names) => `<ul>${names.map((n) => `<li><a href="${n}.html">${n}</a></li>`).join('')}</ul>`;
+  // Figma: chỉ link tới trang tổng hợp figma/index.html, không liệt kê từng component riêng.
+  const figmaSection = figmaNames.includes('figma/index')
+    ? '<ul><li><a href="figma/index.html">figma/index</a></li></ul>'
+    : '<p>(chưa có)</p>';
   fs.writeFileSync(
     path.join(DIST, 'index.html'),
     `<!doctype html><meta charset="utf-8"><title>Email preview</title>
-<style>body{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 16px}a{color:#0B5FFF}li{margin:8px 0}</style>
-<h1>Email templates</h1><ul>${items}</ul>`
+<style>body{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 16px}a{color:#0B5FFF}li{margin:8px 0}h2{margin-top:32px}</style>
+<h1>Email preview</h1>
+<h2>Emails</h2>${emailNames.length ? list(emailNames) : '<p>(chưa có)</p>'}
+<h2>Figma components</h2>${figmaSection}`
   );
 }
 
@@ -162,18 +176,34 @@ function buildAll() {
   const t0 = Date.now();
   fs.mkdirSync(DIST, { recursive: true });
   const locals = loadConfig();
-  const names = [];
+  const emailNames = [];
+  const figmaNames = [];
   let failed = 0;
+
   console.log('\nBuilding emails...');
-  for (const rel of listEmails()) {
+  for (const rel of listPug(EMAILS)) {
     try {
-      names.push(buildOne(rel, locals));
+      emailNames.push(buildOne(EMAILS, rel, locals, rel.replace(/\.pug$/, '')));
     } catch (err) {
       failed++;
       console.error(`  ✗ ${rel}\n${err.message}\n`);
     }
   }
-  writeIndex(names);
+
+  const figmaFiles = listPug(FIGMA);
+  if (figmaFiles.length) {
+    console.log('\nBuilding figma components...');
+    for (const rel of figmaFiles) {
+      try {
+        figmaNames.push(buildOne(FIGMA, rel, locals, `figma/${rel.replace(/\.pug$/, '')}`));
+      } catch (err) {
+        failed++;
+        console.error(`  ✗ ${rel}\n${err.message}\n`);
+      }
+    }
+  }
+
+  writeIndex(emailNames, figmaNames);
   console.log(`Done in ${Date.now() - t0}ms${failed ? ` — ${failed} lỗi` : ''}`);
   return failed;
 }
