@@ -117,6 +117,32 @@ function formatRegionComments(html) {
 }
 
 /**
+ * Cảnh báo thẻ <a> có set `color` inline nhưng thiếu `!important`.
+ * Gmail app (Android/iOS) và nhiều client khác tự ép màu link mặc định
+ * (thường là xanh) đè lên style inline nếu không có !important — link
+ * sẽ hiển thị sai màu dù code không lỗi gì.
+ */
+function findAnchorColorWarnings(html) {
+  const warnings = [];
+  const aTagRe = /<a\b[^>]*>/gi;
+  let m;
+  while ((m = aTagRe.exec(html))) {
+    const tag = m[0];
+    const styleMatch = tag.match(/\sstyle\s*=\s*"([^"]*)"/i);
+    if (!styleMatch) continue;
+    const hasBadColor = styleMatch[1].split(';').some((decl) => {
+      const i = decl.indexOf(':');
+      if (i === -1) return false;
+      const prop = decl.slice(0, i).trim().toLowerCase();
+      const value = decl.slice(i + 1).trim();
+      return prop === 'color' && value && !/!important/i.test(value);
+    });
+    if (hasBadColor) warnings.push(tag.length > 140 ? `${tag.slice(0, 140)}…` : tag);
+  }
+  return warnings;
+}
+
+/**
  * @param srcDir  thư mục chứa file .pug nguồn (EMAILS hoặc FIGMA)
  * @param rel     đường dẫn .pug tương đối trong srcDir, vd "welcome.pug"
  * @param outName tên dùng để ghi ra dist/ + hiện trong index, vd "welcome" hoặc "figma/buttons"
@@ -153,6 +179,13 @@ function buildOne(srcDir, rel, locals, outName) {
   const kb = Buffer.byteLength(html) / 1024;
   const warn = kb > GMAIL_CLIP_KB ? `  ⚠️  > ${GMAIL_CLIP_KB}KB, Gmail sẽ cắt email` : '';
   console.log(`  ✓ ${outName}.html  (${kb.toFixed(1)} KB)${warn}`);
+
+  const anchorWarnings = findAnchorColorWarnings(html);
+  if (anchorWarnings.length) {
+    console.log(`  ⚠️  ${anchorWarnings.length} thẻ <a> đổi color thiếu !important (Gmail app/… có thể ghi đè màu):`);
+    for (const w of anchorWarnings) console.log(`      ${w}`);
+  }
+
   return outName;
 }
 
