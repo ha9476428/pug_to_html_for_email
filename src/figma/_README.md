@@ -14,24 +14,24 @@ component, nên cũng có demo riêng.
 
 ## index.pug là file TỰ SINH — đừng sửa tay
 
-Mỗi lần build, script tự quét mọi file `_design-*.pug` trong thư mục
+Mỗi lần build, script tự quét mọi file `_figma-*.pug` trong thư mục
 này (theo thứ tự **alphabet** của tên file) và ghi đè `index.pug` để
 include hết vào 1 trang tổng hợp. **Thêm 1 component mới = chỉ cần
-tạo file `_design-ten.pug`, không cần đụng vào `index.pug`.**
+tạo file `_figma-ten.pug`, không cần đụng vào `index.pug`.**
 
-`_design-` là tiền tố bắt buộc — đánh dấu đây là component "align với
+`_figma-` là tiền tố bắt buộc — đánh dấu đây là component "align với
 Figma" (có demo trong catalog này), và khiến `build.js` không tự build
 file thành trang riêng (giống cách dấu `_` được dùng trong
 `src/mixins/`).
 
 Không có cơ chế kiểm soát thứ tự riêng — thứ tự hiển thị đúng bằng thứ
-tự alphabet của tên file (vd `_design-buttons.pug` hiện trước
-`_design-colors.pug`). Muốn 1 component hiện ở vị trí cụ thể thì tự đặt
+tự alphabet của tên file (vd `_figma-buttons.pug` hiện trước
+`_figma-colors.pug`). Muốn 1 component hiện ở vị trí cụ thể thì tự đặt
 tên sao cho đúng alphabet.
 
 ## Thêm component mới
 
-1. Tạo `_design-ten.pug`. Nếu demo 1 mixin (`src/mixins/`):
+1. Tạo `_figma-ten.pug`. Nếu demo 1 mixin (`src/mixins/`):
 
    ```pug
    +section({ padding: ['lg', 'lg', 'sm'] })

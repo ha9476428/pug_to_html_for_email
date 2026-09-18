@@ -206,10 +206,10 @@ function writeIndex(emailNames, figmaNames) {
 }
 
 /**
- * Tự sinh src/figma/index.pug — quét mọi `_design-*.pug` trong src/figma/
- * (theo thứ tự alphabet, tức theo số ở đầu tên) và include hết vào 1 trang
- * tổng hợp. Thêm 1 component mới (`_design-NN-ten.pug`) là tự xuất hiện ở
- * đây, không cần sửa tay.
+ * Tự sinh src/figma/index.pug — quét mọi `_figma-*.pug` trong src/figma/
+ * (theo thứ tự alphabet của tên file) và include hết vào 1 trang tổng
+ * hợp. Thêm 1 component mới (`_figma-ten.pug`) là tự xuất hiện ở đây,
+ * không cần sửa tay.
  *
  * Chỉ ghi file khi nội dung thực sự đổi — tránh vòng lặp vô hạn với
  * chokidar (ghi file trong src/ mà đang bị chính nó watch).
@@ -219,7 +219,7 @@ function syncFigmaIndex() {
 
   const partials = fs
     .readdirSync(FIGMA)
-    .filter((f) => f.endsWith('.pug') && f.startsWith('_design-'))
+    .filter((f) => f.endsWith('.pug') && f.startsWith('_figma-'))
     .sort();
 
   const includes = partials.map((f) => `  +divider\n  include ./${f.replace(/\.pug$/, '')}`).join('\n');
@@ -229,7 +229,7 @@ function syncFigmaIndex() {
 //-
 //- Trang TỔNG HỢP DUY NHẤT — gộp toàn bộ component trong src/figma/,
 //- giống trang "component library" trong Figma. Tự quét mọi file
-//- _design-*.pug trong thư mục này mỗi lần build.
+//- _figma-*.pug trong thư mục này mỗi lần build.
 extends ../layouts/layout-base
 
 block vars

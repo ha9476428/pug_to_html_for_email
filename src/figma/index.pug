@@ -3,7 +3,7 @@
 //-
 //- Trang TỔNG HỢP DUY NHẤT — gộp toàn bộ component trong src/figma/,
 //- giống trang "component library" trong Figma. Tự quét mọi file
-//- _design-*.pug trong thư mục này mỗi lần build.
+//- _figma-*.pug trong thư mục này mỗi lần build.
 extends ../layouts/layout-base
 
 block vars
@@ -16,22 +16,22 @@ block content
     +text({ color: theme.color.textMuted }) Tổng hợp toàn bộ component trong src/figma/.
 
   +divider
-  include ./_design-buttons
+  include ./_figma-buttons
   +divider
-  include ./_design-colors
+  include ./_figma-colors
   +divider
-  include ./_design-columns
+  include ./_figma-columns
   +divider
-  include ./_design-comment-markers
+  include ./_figma-comment-markers
   +divider
-  include ./_design-footer
+  include ./_figma-footer
   +divider
-  include ./_design-header
+  include ./_figma-header
   +divider
-  include ./_design-image
+  include ./_figma-image
   +divider
-  include ./_design-info-table
+  include ./_figma-info-table
   +divider
-  include ./_design-link
+  include ./_figma-link
   +divider
-  include ./_design-typography
+  include ./_figma-typography
