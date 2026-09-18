@@ -4,9 +4,9 @@
 
 //- Dòng xem trước (hiển thị cạnh tiêu đề trong inbox), ẩn trong thân email.
 mixin preheader(content)
-  div(style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;")= content
+  div(style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;")= content
   //- Chèn ký tự trắng để client không kéo nội dung thân email vào preview
-  div(style="display:none;max-height:0;overflow:hidden;mso-hide:all;")
+  div(style="display:none;max-height:0;overflow:hidden;")
     | !{'&#847;&zwnj;&nbsp;'.repeat(60)}
 
 //- Tiêu đề: +heading(1) Xin chào   |   +heading(2, { align: 'center' }) ...
@@ -29,18 +29,14 @@ mixin link(href, opts)
   a(href=href target="_blank" style=`color:${o.color} !important;text-decoration:${o.underline ? 'underline' : 'none'};`)&attributes(attributes)
     block
 
-//- Nút "bulletproof": Outlook dùng VML (bo góc + nền), client khác dùng <a>.
+//- Nút bấm — link <a> bo góc, nền màu.
 //-   +button('Kích hoạt tài khoản', 'https://...', { width: 240 })
 mixin button(label, href, opts)
   - var o = Object.assign({ bg: theme.color.primary, color: theme.color.textInverse, width: 220, height: 48, radius: theme.radius.md, align: 'center', size: theme.font.size.base }, opts)
-  - var arc = Math.min(50, Math.round((o.radius / o.height) * 100)) + '%'
   table(role="presentation" align=o.align cellpadding="0" cellspacing="0" border="0" style=`margin:${o.align === 'center' ? '0 auto' : '0'};`)
     tr
       td(align="center")
-        <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="#{href}" style="height:#{o.height}px;v-text-anchor:middle;width:#{o.width}px;" arcsize="#{arc}" stroke="f" fillcolor="#{o.bg}"><w:anchorlock/><center style="color:#{o.color};font-family:#{theme.font.msoFallback};font-size:#{o.size}px;font-weight:bold;">#{label}</center></v:roundrect><![endif]-->
-        <!--[if !mso]><!-->
-        a(href=href target="_blank" style=`display:inline-block;width:${o.width}px;line-height:${o.height}px;background-color:${o.bg};color:${o.color} !important;font-family:${theme.font.family};font-size:${o.size}px;font-weight:${theme.font.weight.bold};text-align:center;text-decoration:none;border-radius:${o.radius}px;-webkit-text-size-adjust:none;mso-hide:all;`)&attributes(attributes)= label
-        <!--<![endif]-->
+        a(href=href target="_blank" style=`display:inline-block;width:${o.width}px;line-height:${o.height}px;background-color:${o.bg};color:${o.color} !important;font-family:${theme.font.family};font-size:${o.size}px;font-weight:${theme.font.weight.bold};text-align:center;text-decoration:none;border-radius:${o.radius}px;-webkit-text-size-adjust:none;`)&attributes(attributes)= label
 
 //- Ảnh: luôn có width attribute (Outlook bỏ qua CSS width). Alt text cũng được style khi ảnh bị chặn.
 //-   +image('https://...', 'Mô tả', 600, { href: 'https://...', align: 'center' })

@@ -1,18 +1,15 @@
 //- ============================================================
 //- MIXIN BỐ CỤC — container, section, columns, spacer, divider
-//- Tất cả đều dùng <table role="presentation"> + ghost table cho Outlook
+//- Tất cả đều dùng <table role="presentation">
 //- ============================================================
 
 //- Khung nội dung cố định bề rộng (mặc định theme.width).
-//- Outlook không hiểu max-width => bọc thêm ghost table có width cố định.
 mixin container(width)
   - var w = width || theme.width
-  <!--[if mso]><table role="presentation" align="center" width="#{w}" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
   table(role="presentation" align="center" width="100%" cellpadding="0" cellspacing="0" border="0" style=`max-width:${w}px;margin:0 auto;background-color:${theme.color.bgContent};`)&attributes(attributes)
     tr
       td(align="left" valign="top")
         block
-  <!--[if mso]></td></tr></table><![endif]-->
 
 //- Một hàng/khối nội dung full-width bên trong container.
 //-   +section({ bg: theme.color.primary, padding: ['xl', 'lg'], align: 'center' })
@@ -23,13 +20,13 @@ mixin section(opts)
       td(align=o.align valign="top" bgcolor=(o.bg !== 'transparent' ? o.bg : undefined) style=`${h.pad(...o.padding)}${o.bg !== 'transparent' ? `background-color:${o.bg};` : ''}text-align:${o.align};`)&attributes(attributes)
         block
 
-//- Khoảng trống dọc — dùng table thay cho margin (Outlook bỏ margin).
+//- Khoảng trống dọc — dùng table thay cho margin.
 //-   +spacer(24)   hoặc   +spacer('lg')
 mixin spacer(size)
   - var hpx = typeof size === 'number' ? size : (theme.space[size] || theme.space.md)
   table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0")
     tr
-      td(height=hpx style=`height:${hpx}px;font-size:${hpx}px;line-height:${hpx}px;mso-line-height-rule:exactly;`) &nbsp;
+      td(height=hpx style=`height:${hpx}px;font-size:${hpx}px;line-height:${hpx}px;`) &nbsp;
 
 //- Đường kẻ ngang
 mixin divider(opts)
@@ -44,7 +41,6 @@ mixin divider(opts)
 
 //- ------------------------------------------------------------
 //- CỘT (hybrid / spongy) — tự xếp chồng trên mobile, KHÔNG cần media query.
-//- Outlook dùng ghost table <td> để giữ cột nằm ngang.
 //-
 //-   +columns
 //-     +column(300)
@@ -58,16 +54,12 @@ mixin columns(opts)
   table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0")&attributes(attributes)
     tr
       td(align=o.align valign="top" style=`${h.pad(...o.padding)}font-size:0;text-align:${o.align};`)
-        <!--[if mso]><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><![endif]-->
         block
-        <!--[if mso]></tr></table><![endif]-->
 
 mixin column(width, opts)
   - var o = Object.assign({ padding: ['sm', 'sm'], valign: 'top', align: 'left' }, opts)
-  <!--[if mso]><td valign="#{o.valign}" width="#{width}" style="width:#{width}px;"><![endif]-->
   div(style=`display:inline-block;width:100%;max-width:${width}px;vertical-align:${o.valign};text-align:${o.align};`)
     table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0")
       tr
         td(valign=o.valign style=`${h.pad(...o.padding)}text-align:${o.align};`)
           block
-  <!--[if mso]></td><![endif]-->

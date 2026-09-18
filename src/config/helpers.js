@@ -8,7 +8,7 @@ const theme = require('./theme');
 
 const px = (v) => (typeof v === 'number' ? `${v}px` : v);
 
-/** Chuỗi style chữ chuẩn email (có mso-line-height-rule cho Outlook). */
+/** Chuỗi style chữ chuẩn cho email. */
 function font({
   size = 'base',
   weight = 'regular',
@@ -19,14 +19,12 @@ function font({
   const fs = typeof size === 'number' ? size : theme.font.size[size];
   const fw = typeof weight === 'number' ? weight : theme.font.weight[weight];
   const lhRatio = typeof lineHeight === 'number' ? lineHeight : theme.font.lineHeight[lineHeight];
-  // Outlook cần line-height tính bằng px để ổn định
   const lh = Math.round(fs * lhRatio);
   return [
     `font-family:${theme.font.family}`,
     `font-size:${fs}px`,
     `font-weight:${fw}`,
     `line-height:${lh}px`,
-    'mso-line-height-rule:exactly',
     `color:${color}`,
     align ? `text-align:${align}` : '',
   ]

@@ -20,7 +20,7 @@ block vars
 - var unsubscribeUrl = unsubscribeUrl || ''
 
 doctype html
-html(lang=lang dir="ltr" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office")
+html(lang=lang dir="ltr" xmlns="http://www.w3.org/1999/xhtml")
   head
     meta(charset="utf-8")
     meta(name="viewport" content="width=device-width, initial-scale=1")
@@ -31,16 +31,8 @@ html(lang=lang dir="ltr" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schem
     meta(name="supported-color-schemes" content="light")
     title= title
 
-    //- Outlook: DPI 96 để ảnh không bị phóng to
-    <!--[if mso]>
-    <noscript><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
-    <![endif]-->
-
-    //- Web font: ẩn khỏi Outlook (tránh lỗi rơi về Times New Roman)
     if theme.font.webfontUrl
-      <!--[if !mso]><!-->
       link(href=theme.font.webfontUrl rel="stylesheet" type="text/css")
-      <!--<![endif]-->
 
     //- CSS riêng của từng email (template con viết `style.` trong block này, sẽ được inline khi build — không còn <style> nào sót lại trong <head>)
     block styles

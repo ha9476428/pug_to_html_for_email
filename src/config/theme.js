@@ -9,11 +9,9 @@ module.exports = {
   // Bề rộng nội dung email (px). 600 là chuẩn an toàn cho Outlook/Gmail.
   width: 600,
 
-  // Font stack — Outlook desktop bỏ qua web font, nên luôn có fallback hệ thống.
+  // Font stack — luôn có fallback hệ thống nếu web font không tải được.
   font: {
     family: "'Inter', Arial, Helvetica, sans-serif",
-    // Outlook (mso) sẽ dùng font này thay vì rơi về Times New Roman
-    msoFallback: 'Arial, Helvetica, sans-serif',
     // Web font (chỉ client hỗ trợ mới tải; để '' nếu không dùng)
     webfontUrl: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap',
     size: { xs: 12, sm: 14, base: 16, lg: 20, xl: 24, xxl: 32 },
