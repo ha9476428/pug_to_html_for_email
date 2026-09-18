@@ -51,7 +51,7 @@ src/
 │   └── order-confirmation.pug
 └── figma/                    # component catalog — xem mục riêng bên dưới
     ├── _README.md
-    ├── _00-header.pug ... _90-footer.pug
+    ├── _design-00-header.pug ... _design-90-footer.pug
     └── index.pug              # ⚠️ file TỰ SINH, đừng sửa tay
 scripts/build.js               # Pug -> HTML -> juice (inline CSS) -> dist/
 dist/                          # HTML đã build — có commit vào git
@@ -149,8 +149,8 @@ Cột hybrid (tự xếp chồng trên mobile, **không cần media query**):
 
 Nơi xem trước toàn bộ mixin/partial dùng chung — giống trang "component library" trong Figma, build ra `dist/figma/index.html`. Chi tiết đầy đủ ở [`src/figma/_README.md`](src/figma/_README.md), tóm tắt:
 
-- Mỗi component 1 file `_NN-ten.pug` (chỉ nội dung, không tự build riêng) — tiền tố số điều khiển thứ tự hiển thị.
-- `index.pug` **tự sinh** mỗi lần build: quét mọi `_*.pug` trong thư mục, include hết theo thứ tự alphabet. Thêm component mới = chỉ cần tạo file `_NN-ten.pug`, không cần sửa `index.pug`.
+- Mỗi component 1 file `_design-NN-ten.pug` (chỉ nội dung, không tự build riêng) — tiền tố số điều khiển thứ tự hiển thị.
+- `index.pug` **tự sinh** mỗi lần build: quét mọi `_design-*.pug` trong thư mục, include hết theo thứ tự alphabet. Thêm component mới = chỉ cần tạo file `_design-NN-ten.pug`, không cần sửa `index.pug`.
 
 ## Giới hạn
 
