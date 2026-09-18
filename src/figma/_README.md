@@ -15,38 +15,23 @@ component, nên cũng có demo riêng.
 ## index.pug là file TỰ SINH — đừng sửa tay
 
 Mỗi lần build, script tự quét mọi file `_design-*.pug` trong thư mục
-này (theo thứ tự alphabet) và ghi đè `index.pug` để include hết vào 1
-trang tổng hợp. **Thêm 1 component mới = chỉ cần tạo file
-`_design-NN-ten.pug`, không cần đụng vào `index.pug`.**
+này (theo thứ tự **alphabet** của tên file) và ghi đè `index.pug` để
+include hết vào 1 trang tổng hợp. **Thêm 1 component mới = chỉ cần
+tạo file `_design-ten.pug`, không cần đụng vào `index.pug`.**
 
 `_design-` là tiền tố bắt buộc — đánh dấu đây là component "align với
-Figma" (có demo trong catalog này). Nó cũng khiến `build.js` không tự
-build file thành trang riêng (giống cách dấu `_` được dùng trong
+Figma" (có demo trong catalog này), và khiến `build.js` không tự build
+file thành trang riêng (giống cách dấu `_` được dùng trong
 `src/mixins/`).
 
-Vì thứ tự hiển thị dựa trên tên file, phần số sau `_design-` dùng để
-kiểm soát thứ tự:
-
-```
-_design-00-header.pug
-_design-10-colors.pug
-_design-20-typography.pug
-_design-30-buttons.pug
-_design-40-link.pug
-_design-50-columns.pug
-_design-60-info-table.pug
-_design-70-comment-markers.pug
-_design-80-image.pug
-_design-90-footer.pug
-```
-
-Cách nhau 10 để dễ chèn thêm ở giữa (vd `_design-35-badge.pug` để chèn
-giữa buttons và link) mà không phải đổi số hàng loạt.
+Không có cơ chế kiểm soát thứ tự riêng — thứ tự hiển thị đúng bằng thứ
+tự alphabet của tên file (vd `_design-buttons.pug` hiện trước
+`_design-colors.pug`). Muốn 1 component hiện ở vị trí cụ thể thì tự đặt
+tên sao cho đúng alphabet.
 
 ## Thêm component mới
 
-1. Tạo `_design-NN-ten.pug` (chọn số phù hợp vị trí muốn hiển thị). Nếu
-   demo 1 mixin (`src/mixins/`):
+1. Tạo `_design-ten.pug`. Nếu demo 1 mixin (`src/mixins/`):
 
    ```pug
    +section({ padding: ['lg', 'lg', 'sm'] })
