@@ -1,12 +1,14 @@
 # pug_to_html_for_email
 
-Bộ khung viết **email HTML bằng Pug**, build ra HTML đã inline CSS, **tương thích Outlook** (desktop Windows, Outlook.com), Gmail, Apple Mail.
+Bộ khung viết **email HTML bằng Pug**, build ra HTML **100% inline style** (không còn `<style>` nào trong `<head>`) — dùng tốt trên Gmail, Apple Mail, Outlook.com, các app di động.
 
 - Dùng đủ **template (`extends`) → `block` → `mixin`** của Pug
 - **Biến dùng chung một chỗ** (`src/config/theme.js`): màu, font-family, cỡ chữ, spacing… không phải khai báo lại
-- **Helper style** (`h.font()`, `h.pad()`) để khỏi gõ lại `font-family`, `line-height`, `mso-line-height-rule`
-- Mixin sẵn sàng cho Outlook: ghost table, nút VML bo góc, cột hybrid tự xếp chồng trên mobile
+- **Helper style** (`h.font()`, `h.pad()`) để khỏi gõ lại `font-family`, `line-height`
+- Build tự inline toàn bộ CSS (juice), tự cảnh báo nếu email > 102KB (Gmail cắt) hoặc thẻ `<a>` đổi màu thiếu `!important`
 - `npm run dev`: xem trước + tự reload khi sửa file
+
+> **Không hỗ trợ Outlook desktop / responsive qua media query.** Xem mục [Giới hạn](#giới-hạn) bên dưới.
 
 ## Bắt đầu
 
@@ -19,7 +21,7 @@ cd pug_to_html_for_email
 npm install
 npm run dev          # http://localhost:3000 — build + watch + live reload
 npm run build        # build HTML gọn vào dist/ (dùng để gửi)
-npm run build:pretty # build HTML có thụt lề, dễ đọc
+npm run build:pretty # build HTML có thụt lề (4 space), dễ đọc
 ```
 
 Yêu cầu Node.js ≥ 20.
@@ -29,24 +31,30 @@ Yêu cầu Node.js ≥ 20.
 ```
 src/
 ├── config/
-│   ├── theme.js        # ⭐ biến dùng chung: màu, font, size, spacing, brand
-│   └── helpers.js      # h.font(), h.pad(), h.reset
+│   ├── theme.js         # ⭐ biến dùng chung: màu, font, size, spacing, brand
+│   └── helpers.js       # h.font(), h.pad(), h.reset
 ├── layouts/
-│   └── layout-base.pug # layout gốc: <head>, khung container, các block
+│   └── layout-base.pug  # layout gốc: <head>, khung container, các block
 ├── mixins/
-│   ├── index.pug       # gom mixin (layout đã include sẵn)
-│   ├── _layout.pug     # container, section, columns/column, spacer, divider
-│   └── _content.pug    # preheader, heading, text, link, button, image, infoTable/infoRow
+│   ├── index.pug        # gom mixin (layout đã include sẵn)
+│   ├── _layout.pug      # container, section, columns/column, spacer, divider
+│   ├── _content.pug     # preheader, heading, text, link, button, image, infoTable/infoRow
+│   └── _debug.pug       # comment(label) — đánh dấu vùng trong HTML build ra
 ├── partials/
-│   ├── header.pug      # header mặc định (logo)
-│   └── footer.pug      # footer mặc định
+│   ├── header.pug       # header mặc định (logo)
+│   └── footer.pug       # footer mặc định
 ├── data/
-│   └── <tên-email>.json  # dữ liệu mẫu, tự nạp theo tên file email
-└── emails/
-    ├── _starter.pug    # file mẫu để copy (bắt đầu bằng "_" => không build)
-    ├── welcome.pug
-    └── order-confirmation.pug
-scripts/build.js        # Pug -> HTML -> juice (inline CSS) -> dist/
+│   └── <tên-email>.json # dữ liệu mẫu, tự nạp theo tên file email
+├── emails/
+│   ├── _starter.pug     # file mẫu để copy (bắt đầu bằng "_" => không build)
+│   ├── welcome.pug
+│   └── order-confirmation.pug
+└── figma/                    # component catalog — xem mục riêng bên dưới
+    ├── _README.md
+    ├── _00-header.pug ... _90-footer.pug
+    └── index.pug              # ⚠️ file TỰ SINH, đừng sửa tay
+scripts/build.js               # Pug -> HTML -> juice (inline CSS) -> dist/
+dist/                          # HTML đã build — có commit vào git
 ```
 
 ## Biến dùng chung — không khai báo lại
@@ -62,12 +70,12 @@ p(style=h.reset + h.font({ size: 'sm', weight: 'semibold', color: theme.color.pr
 
 ```
 font-family:'Inter', Arial, Helvetica, sans-serif;font-size:14px;font-weight:600;
-line-height:21px;mso-line-height-rule:exactly;color:#0B5FFF
+line-height:21px;color:#0B5FFF
 ```
 
 Đổi font / màu toàn bộ email: chỉ sửa `src/config/theme.js`.
 
-Trong CSS (`style.`) vẫn dùng được biến qua `#{}`:
+Trong CSS (`style.`) vẫn dùng được biến qua `#{}` — CSS này sẽ được **inline hết** vào thẻ tương ứng khi build (không còn sót lại trong `<head>`):
 
 ```pug
 block styles
@@ -110,8 +118,8 @@ block header
 
 | Mixin | Ví dụ |
 |---|---|
-| `+container(width)` | layout đã dùng sẵn (ghost table cho Outlook) |
-| `+section(opts)` | `+section({ bg: theme.color.primary, padding: ['xl','lg'], align: 'center' })(class="mobile-pad")` |
+| `+container(width)` | layout đã dùng sẵn |
+| `+section(opts)` | `+section({ bg: theme.color.primary, padding: ['xl','lg'], align: 'center' })` |
 | `+columns(opts)` / `+column(width, opts)` | xem bên dưới |
 | `+spacer(size)` | `+spacer('lg')` hoặc `+spacer(20)` |
 | `+divider(opts)` | `+divider({ color: theme.color.border, spacing: 'md' })` |
@@ -122,8 +130,9 @@ block header
 | `+image(src, alt, width, opts)` | `+image(url, 'Banner', 600, { href: link })` |
 | `+infoTable` / `+infoRow(label, value, opts)` | bảng "nhãn — giá trị" (đơn hàng, giao dịch…) |
 | `+preheader(text)` | layout tự gọi khi có biến `preheader` |
+| `+comment(label)` | bọc 1 block, sinh cặp `<!-- LABEL : S -->` / `<!-- LABEL : E -->` để dò trong View Source |
 
-Cột hybrid (nằm ngang trên desktop/Outlook, tự xếp chồng trên mobile, **không cần media query**):
+Cột hybrid (tự xếp chồng trên mobile, **không cần media query**):
 
 ```pug
 +section
@@ -136,19 +145,24 @@ Cột hybrid (nằm ngang trên desktop/Outlook, tự xếp chồng trên mobile
 
 > Tổng width các cột = bề rộng khả dụng (600 − padding của section; mặc định 600 − 24×2 = 552).
 
-## Những gì đã xử lý cho Outlook
+## Component catalog (`src/figma/`)
 
-- `xmlns:v` / `xmlns:o` + `OfficeDocumentSettings` (PixelsPerInch 96) để ảnh không bị phóng to
-- Ép font fallback (`theme.font.msoFallback`) — tránh Outlook rơi về Times New Roman khi dùng web font
-- Web font bọc trong `<!--[if !mso]>` để Outlook bỏ qua
-- Ghost table cho container và cột (Outlook không hiểu `max-width`, `inline-block`)
-- Nút VML `v:roundrect` (bo góc + nền màu trong Outlook)
-- `mso-line-height-rule:exactly` + line-height tính bằng px
-- Spacer dùng `<td height>` thay cho margin
-- `mso-table-lspace/rspace`, `border-collapse`, `-ms-interpolation-mode`
-- Ảnh luôn có thuộc tính `width`
+Nơi xem trước toàn bộ mixin/partial dùng chung — giống trang "component library" trong Figma, build ra `dist/figma/index.html`. Chi tiết đầy đủ ở [`src/figma/_README.md`](src/figma/_README.md), tóm tắt:
 
-Ngoài ra: fix link tự động của Apple Mail/Samsung, preheader có ký tự đệm, cảnh báo khi email > 102KB (Gmail sẽ cắt).
+- Mỗi component 1 file `_NN-ten.pug` (chỉ nội dung, không tự build riêng) — tiền tố số điều khiển thứ tự hiển thị.
+- `index.pug` **tự sinh** mỗi lần build: quét mọi `_*.pug` trong thư mục, include hết theo thứ tự alphabet. Thêm component mới = chỉ cần tạo file `_NN-ten.pug`, không cần sửa `index.pug`.
+
+## Giới hạn
+
+Đây là quyết định có chủ đích, không phải thiếu sót:
+
+- **Không hỗ trợ Outlook desktop** (Word rendering engine) — đã bỏ hết `<!--[if mso]>`, ghost table, nút VML. Outlook desktop có thể hiện nút vuông, cột xếp dọc thay vì hybrid.
+- **Không dùng media query** — mọi CSS đều inline 100%, kể cả trong `<head>` cũng không còn `<style>` nào. Layout co giãn nhờ kỹ thuật "hybrid columns" (bảng lồng bảng) chứ không phải `@media`.
+- Đổi lại: HTML gọn hơn, không rủi ro client cắt bớt `<style>` trong `<head>`, và chắc chắn hiển thị đúng trên Gmail/Apple Mail/Outlook.com/app di động — nơi đa số người dùng thực tế đọc mail.
+
+Build tự cảnh báo (console) khi:
+- Email > 102KB — Gmail sẽ cắt phần còn lại.
+- Thẻ `<a>` có `color` nhưng thiếu `!important` — Gmail app (Android/iOS) hay ép màu link mặc định đè lên nếu thiếu.
 
 ## Tạo email mới
 
@@ -158,7 +172,11 @@ Ngoài ra: fix link tự động của Apple Mail/Samsung, preheader có ký t�
 
 ## Kiểm tra trước khi gửi
 
-Nên test thực tế trên Litmus / Email on Acid / Testi@, hoặc gửi thử tới Outlook desktop (Windows), Outlook.com, Gmail (web + app) và Apple Mail.
+Nên test thực tế trên Litmus / Email on Acid / Testi@, hoặc gửi thử tới Gmail (web + app), Apple Mail, Outlook.com.
+
+## `dist/`
+
+Thư mục `dist/` (HTML đã build, inline CSS) có commit vào git — sau khi sửa `src/`, nhớ `npm run build` rồi commit lại `dist/` cùng lúc để repo luôn có bản build mới nhất.
 
 ## License
 
