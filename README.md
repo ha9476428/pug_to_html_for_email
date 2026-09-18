@@ -32,7 +32,7 @@ src/
 │   ├── theme.js        # ⭐ biến dùng chung: màu, font, size, spacing, brand
 │   └── helpers.js      # h.font(), h.pad(), h.reset
 ├── layouts/
-│   └── base.pug        # layout gốc: <head>, MSO fix, khung container, các block
+│   └── layout-base.pug # layout gốc: <head>, khung container, các block
 ├── mixins/
 │   ├── index.pug       # gom mixin (layout đã include sẵn)
 │   ├── _layout.pug     # container, section, columns/column, spacer, divider
@@ -88,7 +88,7 @@ Mọi email `extends` layout và chỉ ghi đè block cần thiết:
 | `footer`  | phần cuối email                               | `partials/footer` |
 
 ```pug
-extends ../layouts/base
+extends ../layouts/layout-base
 
 block vars
   - var title = 'Đặt lại mật khẩu'
