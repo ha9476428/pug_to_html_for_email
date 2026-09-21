@@ -3,7 +3,7 @@
 Bộ khung viết **email HTML bằng Pug**, build ra HTML **100% inline style** (không còn `<style>` nào trong `<head>`) — dùng tốt trên Gmail, Apple Mail, Outlook.com, các app di động.
 
 - Dùng đủ **template (`extends`) → `block` → `mixin`** của Pug
-- **Biến dùng chung một chỗ** (`src/config/theme.js`): màu, font-family, cỡ chữ, spacing… không phải khai báo lại
+- **Biến dùng chung một chỗ** (`mail/config/theme.js`): màu, font-family, cỡ chữ, spacing… không phải khai báo lại
 - **Helper style** (`h.font()`, `h.pad()`) để khỏi gõ lại `font-family`, `line-height`
 - Build tự inline toàn bộ CSS (juice), tự cảnh báo nếu email > 102KB (Gmail cắt) hoặc thẻ `<a>` đổi màu thiếu `!important`
 - `npm run dev`: xem trước + tự reload khi sửa file
@@ -28,8 +28,13 @@ Yêu cầu Node.js ≥ 20.
 
 ## Cấu trúc
 
+2 thư mục nguồn **tách biệt hoàn toàn**, mỗi bên một pipeline riêng:
+
+- **`mail/`** — email, build qua Pug + juice (inline CSS, xoá `@media`)
+- **`landing/`** — landing page, HTML/CSS/JS viết tay, copy nguyên trạng (không qua Pug/juice)
+
 ```
-src/
+mail/
 ├── config/
 │   ├── theme.js         # ⭐ biến dùng chung: màu, font, size, spacing, brand
 │   └── helpers.js       # h.font(), h.pad(), h.reset
@@ -54,14 +59,21 @@ src/
     ├── _README.md
     ├── _figma-buttons.pug ... _figma-typography.pug
     └── index.pug              # ⚠️ file TỰ SINH, đừng sửa tay
-landing/                       # trang tĩnh (landing page...) — HTML/CSS/JS viết tay, NGOÀI pipeline email
-scripts/build.js               # Pug -> HTML -> juice (inline CSS) -> dist/
-dist/                          # HTML đã build — có commit vào git
+
+landing/
+├── index.html            # trang landing (link tới css/, images/ bằng đường dẫn tương đối)
+├── css/
+│   └── style.css         # toàn bộ CSS, kể cả @media 1200/768/375
+└── images/
+    └── hero-product.svg  # ảnh cho landing page — thêm ảnh mới vào đây
+
+scripts/build.js               # mail/*.pug|html -> juice (inline CSS) -> dist/ ; landing/ -> copy nguyên trạng -> dist/landing/
+dist/                           # HTML đã build (cả email lẫn landing) — có commit vào git
 ```
 
 ## Trang tĩnh (`landing/`) — không qua pipeline email
 
-Pipeline build email (`juice`) **xoá sạch `@media`** khi build — chủ đích, vì email client không hỗ trợ media query đáng tin cậy (xem [Giới hạn](#giới-hạn)). Nếu bạn cần một trang HTML bình thường có breakpoint responsive thật (landing page, trang giới thiệu...), viết nó trong `landing/` — build script sẽ **copy nguyên trạng** (không qua Pug, không qua juice) vào `dist/landing/`, nên `@media` giữ nguyên.
+Pipeline build email (`juice`) **xoá sạch `@media`** khi build — chủ đích, vì email client không hỗ trợ media query đáng tin cậy (xem [Giới hạn](#giới-hạn)). Landing page cần responsive thật nên nằm hẳn ở thư mục riêng `landing/`, tách khỏi `mail/` — build script chỉ **copy nguyên trạng** (không qua Pug, không qua juice) vào `dist/landing/`, nên `@media`, CSS trong `css/`, ảnh trong `images/` đều giữ nguyên.
 
 ```bash
 npm run dev   # sửa file trong landing/ cũng tự rebuild + reload
@@ -85,7 +97,7 @@ font-family:'Inter', Arial, Helvetica, sans-serif;font-size:14px;font-weight:600
 line-height:21px;color:#0B5FFF
 ```
 
-Đổi font / màu toàn bộ email: chỉ sửa `src/config/theme.js`.
+Đổi font / màu toàn bộ email: chỉ sửa `mail/config/theme.js`.
 
 Trong CSS (`style.`) vẫn dùng được biến qua `#{}` — CSS này sẽ được **inline hết** vào thẻ tương ứng khi build (không còn sót lại trong `<head>`):
 
@@ -157,9 +169,9 @@ Cột hybrid (tự xếp chồng trên mobile, **không cần media query**):
 
 > Tổng width các cột = bề rộng khả dụng (600 − padding của section; mặc định 600 − 24×2 = 552).
 
-## Component catalog (`src/figma/`)
+## Component catalog (`mail/figma/`)
 
-Nơi xem trước toàn bộ mixin/partial dùng chung — giống trang "component library" trong Figma, build ra `dist/figma/index.html`. Chi tiết đầy đủ ở [`src/figma/_README.md`](src/figma/_README.md), tóm tắt:
+Nơi xem trước toàn bộ mixin/partial dùng chung — giống trang "component library" trong Figma, build ra `dist/figma/index.html`. Chi tiết đầy đủ ở [`mail/figma/_README.md`](mail/figma/_README.md), tóm tắt:
 
 - Mỗi component 1 file `_figma-ten.pug` (chỉ nội dung, không tự build riêng).
 - `index.pug` **tự sinh** mỗi lần build: quét mọi `_figma-*.pug` trong thư mục, include hết theo thứ tự alphabet của tên file. Thêm component mới = chỉ cần tạo file `_figma-ten.pug`, không cần sửa `index.pug`.
@@ -178,19 +190,19 @@ Build tự cảnh báo (console) khi:
 
 ## Tạo email mới
 
-1. Copy `src/emails/_starter.pug` → `src/emails/ten-email.pug`
-2. (Tuỳ chọn) tạo `src/data/ten-email.json` — các key trong JSON thành biến trong template
+1. Copy `mail/emails/_starter.pug` → `mail/emails/ten-email.pug`
+2. (Tuỳ chọn) tạo `mail/data/ten-email.json` — các key trong JSON thành biến trong template
 3. `npm run dev` và mở `http://localhost:3000`
 
 ### Viết thẳng bằng HTML (không dùng Pug)
 
-Không muốn học Pug? Copy `src/emails/_starter.html` → `src/emails/ten-email.html` và code HTML/CSS bình thường. Build vẫn:
+Không muốn học Pug? Copy `mail/emails/_starter.html` → `mail/emails/ten-email.html` và code HTML/CSS bình thường. Build vẫn:
 
 - **Inline hết CSS** trong thẻ `<style>` vào từng thẻ (juice) — xoá `<style>` khỏi `<head>`
 - Cảnh báo email > 102KB hoặc `<a>` đổi màu thiếu `!important`
 - Hiện trong `dist/index.html` và tự reload khi `npm run dev`
 
-Đổi lại: không có `theme`/`h`, block/mixin, hay nạp `src/data/*.json` — mọi biến, style phải viết tay trong chính file `.html`. File `.pug` và `.html` dùng chung 1 thư mục `src/emails/` và build song song, không xung đột.
+Đổi lại: không có `theme`/`h`, block/mixin, hay nạp `mail/data/*.json` — mọi biến, style phải viết tay trong chính file `.html`. File `.pug` và `.html` dùng chung 1 thư mục `mail/emails/` và build song song, không xung đột.
 
 ## Kiểm tra trước khi gửi
 
@@ -198,7 +210,7 @@ Nên test thực tế trên Litmus / Email on Acid / Testi@, hoặc gửi thử 
 
 ## `dist/`
 
-Thư mục `dist/` (HTML đã build, inline CSS) có commit vào git — sau khi sửa `src/`, nhớ `npm run build` rồi commit lại `dist/` cùng lúc để repo luôn có bản build mới nhất.
+Thư mục `dist/` (HTML đã build, inline CSS) có commit vào git — sau khi sửa `mail/`, nhớ `npm run build` rồi commit lại `dist/` cùng lúc để repo luôn có bản build mới nhất.
 
 ## License
 

@@ -13,7 +13,7 @@ const pug = require('pug');
 const juice = require('juice').default;
 
 const ROOT = path.resolve(__dirname, '..');
-const SRC = path.join(ROOT, 'src');
+const SRC = path.join(ROOT, 'mail');
 const EMAILS = path.join(SRC, 'emails');
 // Component demo cho Figma/design review — mỗi component 1 file, KHÔNG phải email để gửi.
 const FIGMA = path.join(SRC, 'figma');
@@ -259,13 +259,13 @@ ${pagesSection ? `<h2>Pages</h2>${pagesSection}` : ''}`
 }
 
 /**
- * Tự sinh src/figma/index.pug — quét mọi `_figma-*.pug` trong src/figma/
+ * Tự sinh mail/figma/index.pug — quét mọi `_figma-*.pug` trong mail/figma/
  * (theo thứ tự alphabet của tên file) và include hết vào 1 trang tổng
  * hợp. Thêm 1 component mới (`_figma-ten.pug`) là tự xuất hiện ở đây,
  * không cần sửa tay.
  *
  * Chỉ ghi file khi nội dung thực sự đổi — tránh vòng lặp vô hạn với
- * chokidar (ghi file trong src/ mà đang bị chính nó watch).
+ * chokidar (ghi file trong mail/ mà đang bị chính nó watch).
  */
 function syncFigmaIndex() {
   if (!fs.existsSync(FIGMA)) return;
@@ -280,7 +280,7 @@ function syncFigmaIndex() {
   const content = `//- ⚠️ FILE TỰ SINH — đừng sửa tay, sẽ bị ghi đè ở lần build kế tiếp.
 //- Xem _README.md để biết cách thêm component mới.
 //-
-//- Trang TỔNG HỢP DUY NHẤT — gộp toàn bộ component trong src/figma/,
+//- Trang TỔNG HỢP DUY NHẤT — gộp toàn bộ component trong mail/figma/,
 //- giống trang "component library" trong Figma. Tự quét mọi file
 //- _figma-*.pug trong thư mục này mỗi lần build.
 extends ../layouts/layout-base
@@ -292,7 +292,7 @@ block content
   +section({ padding: ['xl', 'lg', 'md'] })
     +heading(1) Component Catalog
     +spacer('xs')
-    +text({ color: theme.color.textMuted }) Tổng hợp toàn bộ component trong src/figma/.
+    +text({ color: theme.color.textMuted }) Tổng hợp toàn bộ component trong mail/figma/.
 ${includes ? `\n${includes}\n` : ''}`;
 
   const out = path.join(FIGMA, 'index.pug');
@@ -352,6 +352,22 @@ function buildAll() {
 // ---------------------------------------------------------------------------
 // Dev server + live reload (chỉ khi --watch; script reload KHÔNG ghi vào file)
 // ---------------------------------------------------------------------------
+const MIME_TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+};
+
 function serve() {
   const clients = new Set();
   const reloadSnippet = `<script>new EventSource('/__reload').onmessage=()=>location.reload()</script>`;
@@ -370,9 +386,12 @@ function serve() {
         res.writeHead(404).end('Not found');
         return;
       }
-      let body = fs.readFileSync(file, 'utf8');
-      if (file.endsWith('.html')) body = body.replace('</body>', `${reloadSnippet}</body>`);
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }).end(body);
+      const contentType = MIME_TYPES[path.extname(file).toLowerCase()] || 'application/octet-stream';
+      // Chỉ file .html mới cần đọc dạng text (để chèn script reload); còn lại đọc Buffer để không hỏng file nhị phân (ảnh, font...).
+      const body = file.endsWith('.html')
+        ? fs.readFileSync(file, 'utf8').replace('</body>', `${reloadSnippet}</body>`)
+        : fs.readFileSync(file);
+      res.writeHead(200, { 'Content-Type': contentType }).end(body);
     })
     .listen(PORT, () => console.log(`\nPreview: http://localhost:${PORT}`));
 
