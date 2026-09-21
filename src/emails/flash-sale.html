@@ -1,0 +1,84 @@
+<!--
+  Ví dụ email viết THẲNG bằng HTML (copy từ _starter.html, không qua Pug) —
+  file này KHÔNG bắt đầu bằng "_" nên sẽ được build bình thường:
+  npm run build  ->  dist/flash-sale.html
+-->
+<!doctype html>
+<html lang="vi" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <meta name="format-detection" content="telephone=no, date=no, address=no, email=no, url=no" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
+    <title>Flash Sale — Giảm 30% hôm nay</title>
+
+    <style>
+      .btn { background:#0B5FFF; color:#FFFFFF !important; }
+      .text-muted { color:#6B7280; }
+    </style>
+  </head>
+  <body style="margin:0;padding:0;width:100%;word-spacing:normal;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;background-color:#F3F4F6;">
+    <div style="display:none;max-height:0;overflow:hidden;">Flash Sale 24h — giảm 30% toàn bộ đơn hàng</div>
+
+    <div role="article" aria-roledescription="email" aria-label="Flash Sale — Giảm 30% hôm nay" lang="vi" style="background-color:#F3F4F6;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F3F4F6" style="background-color:#F3F4F6;">
+        <tr>
+          <td align="center" valign="top" style="padding:24px 8px;">
+            <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" align="center" style="width:600px;max-width:600px;">
+
+              <!-- Header -->
+              <tr>
+                <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding:24px;font-family:'Inter', Arial, Helvetica, sans-serif;" align="center">
+                  <img src="https://placehold.co/140x40/0B5FFF/FFFFFF?text=LOGO" width="140" height="40" alt="Your Brand" style="display:block;border:0;outline:none;" />
+                </td>
+              </tr>
+
+              <!-- Banner -->
+              <tr>
+                <td style="line-height:0;">
+                  <img src="https://placehold.co/600x240/0B5FFF/FFFFFF?text=FLASH+SALE" width="600" alt="Flash Sale 30%" style="display:block;width:100%;max-width:600px;border:0;outline:none;" />
+                </td>
+              </tr>
+
+              <!-- Nội dung -->
+              <tr>
+                <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding:32px 24px;font-family:'Inter', Arial, Helvetica, sans-serif;">
+                  <h1 style="margin:0 0 16px;font-size:24px;line-height:1.25;color:#1F2937;">Flash Sale — Giảm 30% hôm nay</h1>
+                  <p style="margin:0 0 24px;font-size:16px;line-height:1.5;color:#1F2937;">
+                    Chỉ trong 24 giờ, giảm ngay 30% cho toàn bộ đơn hàng. Áp dụng tự động khi thanh toán, không cần mã giảm giá.
+                  </p>
+
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td class="btn" style="border-radius:8px;" bgcolor="#0B5FFF">
+                        <a href="https://example.com/sale" class="btn" style="display:inline-block;padding:12px 24px;font-family:'Inter', Arial, Helvetica, sans-serif;font-size:16px;font-weight:600;color:#FFFFFF !important;text-decoration:none;border-radius:8px;">Mua ngay</a>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <p class="text-muted" style="margin:24px 0 0;font-size:14px;line-height:1.5;color:#6B7280;">
+                    Ưu đãi kết thúc lúc 23:59 hôm nay. Không áp dụng cùng chương trình khuyến mãi khác.
+                  </p>
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td style="padding:24px;font-family:'Inter', Arial, Helvetica, sans-serif;" align="center">
+                  <p class="text-muted" style="margin:0 0 8px;font-size:12px;line-height:1.5;color:#6B7280;">123 Đường ABC, Quận 1, TP. Hồ Chí Minh</p>
+                  <p style="margin:0;font-size:12px;line-height:1.5;">
+                    <a href="https://example.com/unsubscribe" style="color:#6B7280 !important;text-decoration:underline;">Huỷ đăng ký nhận email</a>
+                  </p>
+                </td>
+              </tr>
+
+            </table>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>
