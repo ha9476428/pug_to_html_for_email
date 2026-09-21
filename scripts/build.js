@@ -20,6 +20,9 @@ const FIGMA = path.join(SRC, 'figma');
 const DATA = path.join(SRC, 'data');
 const DIST = path.join(ROOT, 'dist');
 const CONFIG = path.join(SRC, 'config');
+// Trang tĩnh (landing page...) — HTML/CSS/JS viết tay, ngoài pipeline email
+// (không qua Pug/juice, giữ nguyên @media) — chỉ copy thẳng vào dist/ để xem qua port.
+const STATIC_PAGES = [{ dir: path.join(ROOT, 'landing'), outName: 'landing' }];
 
 const args = new Set(process.argv.slice(2));
 const WATCH = args.has('--watch');
@@ -224,19 +227,34 @@ function buildOneHtml(srcDir, rel, outName) {
   return processHtml(rendered, outName);
 }
 
-function writeIndex(emailNames, figmaNames) {
+/** Copy đệ quy 1 thư mục static (landing page...) nguyên trạng vào dist/, không qua Pug/juice. */
+function copyStaticPages() {
+  const copied = [];
+  for (const { dir, outName } of STATIC_PAGES) {
+    if (!fs.existsSync(dir)) continue;
+    fs.cpSync(dir, path.join(DIST, outName), { recursive: true });
+    copied.push(outName);
+  }
+  return copied;
+}
+
+function writeIndex(emailNames, figmaNames, staticPages) {
   const list = (names) => `<ul>${names.map((n) => `<li><a href="${n}.html">${n}</a></li>`).join('')}</ul>`;
   // Figma: chỉ link tới trang tổng hợp figma/index.html, không liệt kê từng component riêng.
   const figmaSection = figmaNames.includes('figma/index')
     ? '<ul><li><a href="figma/index.html">figma/index</a></li></ul>'
     : '<p>(chưa có)</p>';
+  const pagesSection = staticPages.length
+    ? `<ul>${staticPages.map((n) => `<li><a href="${n}/index.html">${n}</a></li>`).join('')}</ul>`
+    : '';
   fs.writeFileSync(
     path.join(DIST, 'index.html'),
     `<!doctype html><meta charset="utf-8"><title>Email preview</title>
 <style>body{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 16px}a{color:#0B5FFF}li{margin:8px 0}h2{margin-top:32px}</style>
 <h1>Email preview</h1>
 <h2>Emails</h2>${emailNames.length ? list(emailNames) : '<p>(chưa có)</p>'}
-<h2>Figma components</h2>${figmaSection}`
+<h2>Figma components</h2>${figmaSection}
+${pagesSection ? `<h2>Pages</h2>${pagesSection}` : ''}`
   );
 }
 
@@ -323,7 +341,10 @@ function buildAll() {
     }
   }
 
-  writeIndex(emailNames, figmaNames);
+  const staticPages = copyStaticPages();
+  if (staticPages.length) console.log(`\nStatic pages: ${staticPages.join(', ')}`);
+
+  writeIndex(emailNames, figmaNames, staticPages);
   console.log(`Done in ${Date.now() - t0}ms${failed ? ` — ${failed} lỗi` : ''}`);
   return failed;
 }
@@ -364,8 +385,9 @@ async function main() {
 
   const reload = serve();
   const { watch } = require('chokidar');
+  const watchDirs = [SRC, ...STATIC_PAGES.map((p) => p.dir).filter((d) => fs.existsSync(d))];
   let timer;
-  watch(SRC, { ignoreInitial: true }).on('all', (event, file) => {
+  watch(watchDirs, { ignoreInitial: true }).on('all', (event, file) => {
     clearTimeout(timer);
     timer = setTimeout(() => {
       console.log(`\n${event}: ${path.relative(ROOT, file)}`);
@@ -373,7 +395,7 @@ async function main() {
       reload();
     }, 100);
   });
-  console.log('Đang theo dõi src/ ... (Ctrl+C để dừng)');
+  console.log(`Đang theo dõi ${watchDirs.map((d) => path.relative(ROOT, d) || '.').join(', ')} ... (Ctrl+C để dừng)`);
 }
 
 main();

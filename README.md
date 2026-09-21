@@ -54,9 +54,20 @@ src/
     ├── _README.md
     ├── _figma-buttons.pug ... _figma-typography.pug
     └── index.pug              # ⚠️ file TỰ SINH, đừng sửa tay
+landing/                       # trang tĩnh (landing page...) — HTML/CSS/JS viết tay, NGOÀI pipeline email
 scripts/build.js               # Pug -> HTML -> juice (inline CSS) -> dist/
 dist/                          # HTML đã build — có commit vào git
 ```
+
+## Trang tĩnh (`landing/`) — không qua pipeline email
+
+Pipeline build email (`juice`) **xoá sạch `@media`** khi build — chủ đích, vì email client không hỗ trợ media query đáng tin cậy (xem [Giới hạn](#giới-hạn)). Nếu bạn cần một trang HTML bình thường có breakpoint responsive thật (landing page, trang giới thiệu...), viết nó trong `landing/` — build script sẽ **copy nguyên trạng** (không qua Pug, không qua juice) vào `dist/landing/`, nên `@media` giữ nguyên.
+
+```bash
+npm run dev   # sửa file trong landing/ cũng tự rebuild + reload
+```
+
+Xem tại `http://localhost:3000/landing/index.html` (hoặc mở thẳng `landing/index.html` bằng trình duyệt, không cần server).
 
 ## Biến dùng chung — không khai báo lại
 
