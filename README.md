@@ -46,7 +46,8 @@ src/
 ├── data/
 │   └── <tên-email>.json # dữ liệu mẫu, tự nạp theo tên file email
 ├── emails/
-│   ├── _starter.pug     # file mẫu để copy (bắt đầu bằng "_" => không build)
+│   ├── _starter.pug     # file mẫu Pug để copy (bắt đầu bằng "_" => không build)
+│   ├── _starter.html    # file mẫu HTML thuần để copy — xem mục bên dưới
 │   ├── welcome.pug
 │   └── order-confirmation.pug
 └── figma/                    # component catalog — xem mục riêng bên dưới
@@ -169,6 +170,16 @@ Build tự cảnh báo (console) khi:
 1. Copy `src/emails/_starter.pug` → `src/emails/ten-email.pug`
 2. (Tuỳ chọn) tạo `src/data/ten-email.json` — các key trong JSON thành biến trong template
 3. `npm run dev` và mở `http://localhost:3000`
+
+### Viết thẳng bằng HTML (không dùng Pug)
+
+Không muốn học Pug? Copy `src/emails/_starter.html` → `src/emails/ten-email.html` và code HTML/CSS bình thường. Build vẫn:
+
+- **Inline hết CSS** trong thẻ `<style>` vào từng thẻ (juice) — xoá `<style>` khỏi `<head>`
+- Cảnh báo email > 102KB hoặc `<a>` đổi màu thiếu `!important`
+- Hiện trong `dist/index.html` và tự reload khi `npm run dev`
+
+Đổi lại: không có `theme`/`h`, block/mixin, hay nạp `src/data/*.json` — mọi biến, style phải viết tay trong chính file `.html`. File `.pug` và `.html` dùng chung 1 thư mục `src/emails/` và build song song, không xung đột.
 
 ## Kiểm tra trước khi gửi
 

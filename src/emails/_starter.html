@@ -1,0 +1,57 @@
+<!--
+  File bắt đầu bằng "_" sẽ KHÔNG được build.
+  Copy file này thành `ten-email.html` để tạo email viết thẳng bằng HTML
+  (không qua Pug/mixin) — vẫn được build inline CSS (juice) + cảnh báo
+  dung lượng/màu link giống hệt email viết bằng Pug.
+
+  Lưu ý vì đây là HTML thuần:
+  - Không có `theme`/`h`, block, mixin — tự viết style tay.
+  - Không nạp `src/data/*.json` — muốn đổi nội dung thì sửa thẳng trong file.
+  - CSS trong thẻ <style> dưới đây sẽ được inline vào từng thẻ khi build,
+    thẻ <style> sẽ bị xoá khỏi <head> (không sót lại style nào ngoài inline).
+-->
+<!doctype html>
+<html lang="vi" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <meta name="format-detection" content="telephone=no, date=no, address=no, email=no, url=no" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
+    <title>Tiêu đề email</title>
+
+    <style>
+      .btn { background:#0B5FFF; color:#FFFFFF !important; }
+      .text-muted { color:#6B7280; }
+    </style>
+  </head>
+  <body style="margin:0;padding:0;width:100%;word-spacing:normal;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;background-color:#F3F4F6;">
+    <div style="display:none;max-height:0;overflow:hidden;">Dòng xem trước trong hộp thư</div>
+
+    <div role="article" aria-roledescription="email" aria-label="Tiêu đề email" lang="vi" style="background-color:#F3F4F6;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F3F4F6" style="background-color:#F3F4F6;">
+        <tr>
+          <td align="center" valign="top" style="padding:24px 8px;">
+            <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" align="center" style="width:600px;max-width:600px;">
+              <tr>
+                <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding:32px 24px;font-family:'Inter', Arial, Helvetica, sans-serif;">
+                  <h1 style="margin:0 0 16px;font-size:24px;line-height:1.25;color:#1F2937;">Tiêu đề</h1>
+                  <p style="margin:0 0 24px;font-size:16px;line-height:1.5;color:#1F2937;">Nội dung email...</p>
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td class="btn" style="border-radius:8px;" bgcolor="#0B5FFF">
+                        <a href="https://example.com" class="btn" style="display:inline-block;padding:12px 24px;font-family:'Inter', Arial, Helvetica, sans-serif;font-size:16px;font-weight:600;color:#FFFFFF !important;text-decoration:none;border-radius:8px;">Call to action</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>

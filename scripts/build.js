@@ -49,6 +49,15 @@ function listPug(dir) {
     .map((f) => f.split(path.sep).join('/'));
 }
 
+/** Liệt kê file .html viết tay (không tính file bắt đầu bằng `_`) trong 1 thư mục. */
+function listHtml(dir) {
+  if (!fs.existsSync(dir)) return [];
+  return fs
+    .readdirSync(dir, { recursive: true })
+    .filter((f) => f.endsWith('.html') && !path.basename(f).startsWith('_'))
+    .map((f) => f.split(path.sep).join('/'));
+}
+
 function beautify(html) {
   const { html: fmt } = require('js-beautify');
   return fmt(html, {
@@ -143,19 +152,14 @@ function findAnchorColorWarnings(html) {
 }
 
 /**
- * @param srcDir  thư mục chứa file .pug nguồn (EMAILS hoặc FIGMA)
- * @param rel     đường dẫn .pug tương đối trong srcDir, vd "welcome.pug"
- * @param outName tên dùng để ghi ra dist/ + hiện trong index, vd "welcome" hoặc "figma/buttons"
+ * Inline CSS (juice), format (nếu --pretty), ghi ra dist/, in cảnh báo.
+ * Dùng chung cho cả email viết bằng Pug (đã render ra HTML) lẫn email viết
+ * thẳng bằng HTML (đọc nguyên file).
+ *
+ * @param rendered  chuỗi HTML đầu vào (chưa inline CSS)
+ * @param outName   tên dùng để ghi ra dist/ + hiện trong index, vd "welcome" hoặc "figma/buttons"
  */
-function buildOne(srcDir, rel, locals, outName) {
-  const file = path.join(srcDir, rel);
-  const rendered = pug.renderFile(file, {
-    basedir: SRC, // cho phép include /mixins/... (đường dẫn tuyệt đối từ src)
-    ...locals,
-    ...loadData(rel.replace(/\.pug$/, '')),
-    cache: false,
-  });
-
+function processHtml(rendered, outName) {
   let html = juice(rendered, {
     removeStyleTags: true, // xoá toàn bộ <style> sau khi inline — không style nào sót lại trong <head>
     preserveMediaQueries: false,
@@ -187,6 +191,37 @@ function buildOne(srcDir, rel, locals, outName) {
   }
 
   return outName;
+}
+
+/**
+ * @param srcDir  thư mục chứa file .pug nguồn (EMAILS hoặc FIGMA)
+ * @param rel     đường dẫn .pug tương đối trong srcDir, vd "welcome.pug"
+ * @param outName tên dùng để ghi ra dist/ + hiện trong index, vd "welcome" hoặc "figma/buttons"
+ */
+function buildOne(srcDir, rel, locals, outName) {
+  const file = path.join(srcDir, rel);
+  const rendered = pug.renderFile(file, {
+    basedir: SRC, // cho phép include /mixins/... (đường dẫn tuyệt đối từ src)
+    ...locals,
+    ...loadData(rel.replace(/\.pug$/, '')),
+    cache: false,
+  });
+
+  return processHtml(rendered, outName);
+}
+
+/**
+ * Email viết thẳng bằng HTML (không qua Pug) — đọc nguyên file, vẫn được
+ * inline CSS (juice) + cảnh báo dung lượng/màu link như email viết bằng Pug.
+ *
+ * @param srcDir  thư mục chứa file .html nguồn (EMAILS)
+ * @param rel     đường dẫn .html tương đối trong srcDir, vd "khuyen-mai.html"
+ * @param outName tên dùng để ghi ra dist/ + hiện trong index, vd "khuyen-mai"
+ */
+function buildOneHtml(srcDir, rel, outName) {
+  const file = path.join(srcDir, rel);
+  const rendered = fs.readFileSync(file, 'utf8');
+  return processHtml(rendered, outName);
 }
 
 function writeIndex(emailNames, figmaNames) {
@@ -260,6 +295,14 @@ function buildAll() {
   for (const rel of listPug(EMAILS)) {
     try {
       emailNames.push(buildOne(EMAILS, rel, locals, rel.replace(/\.pug$/, '')));
+    } catch (err) {
+      failed++;
+      console.error(`  ✗ ${rel}\n${err.message}\n`);
+    }
+  }
+  for (const rel of listHtml(EMAILS)) {
+    try {
+      emailNames.push(buildOneHtml(EMAILS, rel, rel.replace(/\.html$/, '')));
     } catch (err) {
       failed++;
       console.error(`  ✗ ${rel}\n${err.message}\n`);
