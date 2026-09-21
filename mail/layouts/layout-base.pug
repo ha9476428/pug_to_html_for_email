@@ -21,36 +21,36 @@ block vars
 
 doctype html
 html(lang=lang dir="ltr" xmlns="http://www.w3.org/1999/xhtml")
-  head
-    meta(charset="utf-8")
-    meta(name="viewport" content="width=device-width, initial-scale=1")
-    meta(http-equiv="X-UA-Compatible" content="IE=edge")
-    meta(name="x-apple-disable-message-reformatting")
-    meta(name="format-detection" content="telephone=no, date=no, address=no, email=no, url=no")
-    meta(name="color-scheme" content="light")
-    meta(name="supported-color-schemes" content="light")
-    title= title
+    head
+        meta(charset="utf-8")
+        meta(name="viewport" content="width=device-width, initial-scale=1")
+        meta(http-equiv="X-UA-Compatible" content="IE=edge")
+        meta(name="x-apple-disable-message-reformatting")
+        meta(name="format-detection" content="telephone=no, date=no, address=no, email=no, url=no")
+        meta(name="color-scheme" content="light")
+        meta(name="supported-color-schemes" content="light")
+        title= title
 
-    if theme.font.webfontUrl
-      link(href=theme.font.webfontUrl rel="stylesheet" type="text/css")
+        if theme.font.webfontUrl
+            link(href=theme.font.webfontUrl rel="stylesheet" type="text/css")
 
-    //- CSS riêng của từng email (template con viết `style.` trong block này, sẽ được inline khi build — không còn <style> nào sót lại trong <head>)
-    block styles
+        //- CSS riêng của từng email (template con viết `style.` trong block này, sẽ được inline khi build — không còn <style> nào sót lại trong <head>)
+        block styles
 
-  body#body(style=`margin:0;padding:0;width:100%;word-spacing:normal;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;background-color:${theme.color.bgBody};`)
-    if preheader
-      +preheader(preheader)
+    body#body(style=`margin:0;padding:0;width:100%;word-spacing:normal;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;background-color:${theme.color.bgBody};`)
+        if preheader
+            +preheader(preheader)
 
-    div(role="article" aria-roledescription="email" aria-label=title lang=lang style=`background-color:${theme.color.bgBody};`)
-      table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor=theme.color.bgBody style=`background-color:${theme.color.bgBody};`)
-        tr
-          td(align="center" valign="top" style=h.pad('lg', 'sm'))
-            +container
-              +comment('HEADER')
-                block header
-                  include ../partials/header
-              +comment('CONTENT')
-                block content
-              +comment('FOOTER')
-                block footer
-                  include ../partials/footer
+        div(role="article" aria-roledescription="email" aria-label=title lang=lang style=`background-color:${theme.color.bgBody};`)
+            table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor=theme.color.bgBody style=`background-color:${theme.color.bgBody};`)
+                tr
+                    td(align="center" valign="top" style=h.pad('lg', 'sm'))
+                        +container
+                            +comment('HEADER')
+                                block header
+                                    include ../partials/header
+                            +comment('CONTENT')
+                                block content
+                            +comment('FOOTER')
+                                block footer
+                                    include ../partials/footer

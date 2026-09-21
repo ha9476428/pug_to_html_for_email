@@ -7,31 +7,31 @@
 extends ../layouts/layout-base
 
 block vars
-  - var title = 'Component Catalog — Overview'
+    - var title = 'Component Catalog — Overview'
 
 block content
-  +section({ padding: ['xl', 'lg', 'md'] })
-    +heading(1) Component Catalog
-    +spacer('xs')
-    +text({ color: theme.color.textMuted }) Tổng hợp toàn bộ component trong mail/figma/.
+    +section({ padding: ['xl', 'lg', 'md'] })
+        +heading(1) Component Catalog
+        +spacer('xs')
+        +text({ color: theme.color.textMuted }) Tổng hợp toàn bộ component trong mail/figma/.
 
-  +divider
-  include ./_figma-buttons
-  +divider
-  include ./_figma-colors
-  +divider
-  include ./_figma-columns
-  +divider
-  include ./_figma-comment-markers
-  +divider
-  include ./_figma-footer
-  +divider
-  include ./_figma-header
-  +divider
-  include ./_figma-image
-  +divider
-  include ./_figma-info-table
-  +divider
-  include ./_figma-link
-  +divider
-  include ./_figma-typography
+    +divider
+    include ./_figma-buttons
+    +divider
+    include ./_figma-colors
+    +divider
+    include ./_figma-columns
+    +divider
+    include ./_figma-comment-markers
+    +divider
+    include ./_figma-footer
+    +divider
+    include ./_figma-header
+    +divider
+    include ./_figma-image
+    +divider
+    include ./_figma-info-table
+    +divider
+    include ./_figma-link
+    +divider
+    include ./_figma-typography

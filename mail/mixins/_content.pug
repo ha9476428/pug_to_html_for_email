@@ -4,65 +4,65 @@
 
 //- Dòng xem trước (hiển thị cạnh tiêu đề trong inbox), ẩn trong thân email.
 mixin preheader(content)
-  div(style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;")= content
-  //- Chèn ký tự trắng để client không kéo nội dung thân email vào preview
-  div(style="display:none;max-height:0;overflow:hidden;")
-    | !{'&#847;&zwnj;&nbsp;'.repeat(60)}
+    div(style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;")= content
+    //- Chèn ký tự trắng để client không kéo nội dung thân email vào preview
+    div(style="display:none;max-height:0;overflow:hidden;")
+        | !{'&#847;&zwnj;&nbsp;'.repeat(60)}
 
 //- Tiêu đề: +heading(1) Xin chào   |   +heading(2, { align: 'center' }) ...
 mixin heading(level, opts)
-  - var lv = level || 1
-  - var sizes = { 1: 'xxl', 2: 'xl', 3: 'lg' }
-  - var o = Object.assign({ color: theme.color.text, align: 'left', weight: 'bold' }, opts)
-  #{'h' + lv}(style=h.reset + h.font({ size: sizes[lv] || 'lg', weight: o.weight, color: o.color, lineHeight: 'tight', align: o.align }))&attributes(attributes)
-    block
+    - var lv = level || 1
+    - var sizes = { 1: 'xxl', 2: 'xl', 3: 'lg' }
+    - var o = Object.assign({ color: theme.color.text, align: 'left', weight: 'bold' }, opts)
+    #{'h' + lv}(style=h.reset + h.font({ size: sizes[lv] || 'lg', weight: o.weight, color: o.color, lineHeight: 'tight', align: o.align }))&attributes(attributes)
+        block
 
 //- Đoạn văn: +text Nội dung   |   +text({ size: 'sm', color: theme.color.textMuted })
 mixin text(opts)
-  - var o = Object.assign({ size: 'base', weight: 'regular', color: theme.color.text, align: 'left' }, opts)
-  p(style=h.reset + h.font(o))&attributes(attributes)
-    block
+    - var o = Object.assign({ size: 'base', weight: 'regular', color: theme.color.text, align: 'left' }, opts)
+    p(style=h.reset + h.font(o))&attributes(attributes)
+        block
 
 //- Link trong đoạn văn
 mixin link(href, opts)
-  - var o = Object.assign({ color: theme.color.primary, underline: true }, opts)
-  a(href=href target="_blank" style=`color:${o.color} !important;text-decoration:${o.underline ? 'underline' : 'none'};`)&attributes(attributes)
-    block
+    - var o = Object.assign({ color: theme.color.primary, underline: true }, opts)
+    a(href=href target="_blank" style=`color:${o.color} !important;text-decoration:${o.underline ? 'underline' : 'none'};`)&attributes(attributes)
+        block
 
 //- Nút bấm — link <a> bo góc, nền màu.
 //-   +button('Kích hoạt tài khoản', 'https://...', { width: 240 })
 mixin button(label, href, opts)
-  - var o = Object.assign({ bg: theme.color.primary, color: theme.color.textInverse, width: 220, height: 48, radius: theme.radius.md, align: 'center', size: theme.font.size.base }, opts)
-  table(role="presentation" align=o.align cellpadding="0" cellspacing="0" border="0" style=`margin:${o.align === 'center' ? '0 auto' : '0'};`)
-    tr
-      td(align="center")
-        a(href=href target="_blank" style=`display:inline-block;width:${o.width}px;line-height:${o.height}px;background-color:${o.bg};color:${o.color} !important;font-family:${theme.font.family};font-size:${o.size}px;font-weight:${theme.font.weight.bold};text-align:center;text-decoration:none;border-radius:${o.radius}px;-webkit-text-size-adjust:none;`)&attributes(attributes)= label
+    - var o = Object.assign({ bg: theme.color.primary, color: theme.color.textInverse, width: 220, height: 48, radius: theme.radius.md, align: 'center', size: theme.font.size.base }, opts)
+    table(role="presentation" align=o.align cellpadding="0" cellspacing="0" border="0" style=`margin:${o.align === 'center' ? '0 auto' : '0'};`)
+        tr
+            td(align="center")
+                a(href=href target="_blank" style=`display:inline-block;width:${o.width}px;line-height:${o.height}px;background-color:${o.bg};color:${o.color} !important;font-family:${theme.font.family};font-size:${o.size}px;font-weight:${theme.font.weight.bold};text-align:center;text-decoration:none;border-radius:${o.radius}px;-webkit-text-size-adjust:none;`)&attributes(attributes)= label
 
 //- Ảnh: luôn có width attribute (Outlook bỏ qua CSS width). Alt text cũng được style khi ảnh bị chặn.
 //-   +image('https://...', 'Mô tả', 600, { href: 'https://...', align: 'center' })
 mixin image(src, alt, width, opts)
-  - var o = Object.assign({ align: 'center', href: null, height: 'auto' }, opts)
-  - var imgStyle = `display:block;width:100%;max-width:${width}px;height:auto;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;margin:${o.align === 'center' ? '0 auto' : '0'};${h.font({ size: 'sm', color: theme.color.textMuted })}`
-  if o.href
-    a(href=o.href target="_blank" style="display:block;text-decoration:none;")
-      img(src=src alt=alt width=width height=(o.height === 'auto' ? undefined : o.height) style=imgStyle)&attributes(attributes)
-  else
-    img(src=src alt=alt width=width height=(o.height === 'auto' ? undefined : o.height) style=imgStyle)&attributes(attributes)
+    - var o = Object.assign({ align: 'center', href: null, height: 'auto' }, opts)
+    - var imgStyle = `display:block;width:100%;max-width:${width}px;height:auto;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;margin:${o.align === 'center' ? '0 auto' : '0'};${h.font({ size: 'sm', color: theme.color.textMuted })}`
+    if o.href
+        a(href=o.href target="_blank" style="display:block;text-decoration:none;")
+            img(src=src alt=alt width=width height=(o.height === 'auto' ? undefined : o.height) style=imgStyle)&attributes(attributes)
+    else
+        img(src=src alt=alt width=width height=(o.height === 'auto' ? undefined : o.height) style=imgStyle)&attributes(attributes)
 
 //- Bảng thông tin dạng "Nhãn — Giá trị"
 //-   +infoTable
 //-     +infoRow('Mã đơn', '#12345')
 //-     +infoRow('Tổng tiền', '1.250.000 ₫', { strong: true })
 mixin infoTable(opts)
-  - var o = Object.assign({ bg: theme.color.bgBody }, opts)
-  table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor=o.bg style=`background-color:${o.bg};border-radius:${theme.radius.md}px;`)&attributes(attributes)
-    tr
-      td(style=h.pad('md', 'lg'))
-        table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0")
-          block
+    - var o = Object.assign({ bg: theme.color.bgBody }, opts)
+    table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor=o.bg style=`background-color:${o.bg};border-radius:${theme.radius.md}px;`)&attributes(attributes)
+        tr
+            td(style=h.pad('md', 'lg'))
+                table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0")
+                    block
 
 mixin infoRow(label, value, opts)
-  - var o = Object.assign({ strong: false }, opts)
-  tr
-    td(valign="top" style=`${h.pad('xs', 0)}${h.font({ size: 'sm', color: theme.color.textMuted })}`)= label
-    td(valign="top" align="right" style=`${h.pad('xs', 0)}${h.font({ size: o.strong ? 'base' : 'sm', weight: o.strong ? 'bold' : 'semibold', align: 'right' })}`)= value
+    - var o = Object.assign({ strong: false }, opts)
+    tr
+        td(valign="top" style=`${h.pad('xs', 0)}${h.font({ size: 'sm', color: theme.color.textMuted })}`)= label
+        td(valign="top" align="right" style=`${h.pad('xs', 0)}${h.font({ size: o.strong ? 'base' : 'sm', weight: o.strong ? 'bold' : 'semibold', align: 'right' })}`)= value

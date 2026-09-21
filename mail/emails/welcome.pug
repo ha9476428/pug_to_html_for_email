@@ -1,36 +1,36 @@
 extends ../layouts/layout-base
 
 block vars
-  - var title = 'Chào mừng bạn đến với ' + theme.brand.name
-  - var preheader = 'Tài khoản của bạn đã sẵn sàng — bắt đầu chỉ với 1 bước.'
-  - var userName = 'Minh Anh'
-  - var ctaUrl = 'https://example.com/activate?token=abc&ref=email'
-  - var unsubscribeUrl = 'https://example.com/unsubscribe'
+    - var title = 'Chào mừng bạn đến với ' + theme.brand.name
+    - var preheader = 'Tài khoản của bạn đã sẵn sàng — bắt đầu chỉ với 1 bước.'
+    - var userName = 'Minh Anh'
+    - var ctaUrl = 'https://example.com/activate?token=abc&ref=email'
+    - var unsubscribeUrl = 'https://example.com/unsubscribe'
 
 block content
-  +image('https://placehold.co/600x240/0B5FFF/FFFFFF?text=Welcome', 'Chào mừng', theme.width)
+    +image('https://placehold.co/600x240/0B5FFF/FFFFFF?text=Welcome', 'Chào mừng', theme.width)
 
-  +section({ padding: ['xl', 'lg', 'md'] })
-    +heading(1) Xin chào #{userName} 👋
-    +spacer('md')
-    +text
-      | Cảm ơn bạn đã đăng ký tài khoản tại #{theme.brand.name}.
-      | Hãy kích hoạt tài khoản để bắt đầu sử dụng đầy đủ tính năng.
-    +spacer('lg')
-    +button('Kích hoạt tài khoản', ctaUrl, { width: 240 })
-    +spacer('lg')
-    +text({ size: 'sm', color: theme.color.textMuted })
-      | Nếu nút không hoạt động, hãy mở đường dẫn sau:&nbsp;
-      +link(ctaUrl) #{ctaUrl}
+    +section({ padding: ['xl', 'lg', 'md'] })
+        +heading(1) Xin chào #{userName} 👋
+        +spacer('md')
+        +text
+            | Cảm ơn bạn đã đăng ký tài khoản tại #{theme.brand.name}.
+            | Hãy kích hoạt tài khoản để bắt đầu sử dụng đầy đủ tính năng.
+        +spacer('lg')
+        +button('Kích hoạt tài khoản', ctaUrl, { width: 240 })
+        +spacer('lg')
+        +text({ size: 'sm', color: theme.color.textMuted })
+            | Nếu nút không hoạt động, hãy mở đường dẫn sau:&nbsp;
+            +link(ctaUrl) #{ctaUrl}
 
-  +section({ padding: [0, 'lg', 'lg'] })
-    +divider
-    +heading(3) Bạn có thể làm gì tiếp theo?
-    +spacer('sm')
-    +columns
-      +column(276)
-        +text({ weight: 'semibold' }) ✅ Hoàn thiện hồ sơ
-        +text({ size: 'sm', color: theme.color.textMuted }) Thêm ảnh đại diện và thông tin liên hệ.
-      +column(276)
-        +text({ weight: 'semibold' }) 🔔 Bật thông báo
-        +text({ size: 'sm', color: theme.color.textMuted }) Không bỏ lỡ cập nhật quan trọng.
+    +section({ padding: [0, 'lg', 'lg'] })
+        +divider
+        +heading(3) Bạn có thể làm gì tiếp theo?
+        +spacer('sm')
+        +columns
+            +column(276)
+                +text({ weight: 'semibold' }) ✅ Hoàn thiện hồ sơ
+                +text({ size: 'sm', color: theme.color.textMuted }) Thêm ảnh đại diện và thông tin liên hệ.
+            +column(276)
+                +text({ weight: 'semibold' }) 🔔 Bật thông báo
+                +text({ size: 'sm', color: theme.color.textMuted }) Không bỏ lỡ cập nhật quan trọng.

@@ -5,39 +5,39 @@
 
 //- Khung nội dung cố định bề rộng (mặc định theme.width).
 mixin container(width)
-  - var w = width || theme.width
-  table(role="presentation" align="center" width="100%" cellpadding="0" cellspacing="0" border="0" style=`max-width:${w}px;margin:0 auto;background-color:${theme.color.bgContent};`)&attributes(attributes)
-    tr
-      td(align="left" valign="top")
-        block
+    - var w = width || theme.width
+    table(role="presentation" align="center" width="100%" cellpadding="0" cellspacing="0" border="0" style=`max-width:${w}px;margin:0 auto;background-color:${theme.color.bgContent};`)&attributes(attributes)
+        tr
+            td(align="left" valign="top")
+                block
 
 //- Một hàng/khối nội dung full-width bên trong container.
 //-   +section({ bg: theme.color.primary, padding: ['xl', 'lg'], align: 'center' })
 mixin section(opts)
-  - var o = Object.assign({ bg: 'transparent', padding: ['lg', 'lg'], align: 'left' }, opts)
-  table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0")
-    tr
-      td(align=o.align valign="top" bgcolor=(o.bg !== 'transparent' ? o.bg : undefined) style=`${h.pad(...o.padding)}${o.bg !== 'transparent' ? `background-color:${o.bg};` : ''}text-align:${o.align};`)&attributes(attributes)
-        block
+    - var o = Object.assign({ bg: 'transparent', padding: ['lg', 'lg'], align: 'left' }, opts)
+    table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0")
+        tr
+            td(align=o.align valign="top" bgcolor=(o.bg !== 'transparent' ? o.bg : undefined) style=`${h.pad(...o.padding)}${o.bg !== 'transparent' ? `background-color:${o.bg};` : ''}text-align:${o.align};`)&attributes(attributes)
+                block
 
 //- Khoảng trống dọc — dùng table thay cho margin.
 //-   +spacer(24)   hoặc   +spacer('lg')
 mixin spacer(size)
-  - var hpx = typeof size === 'number' ? size : (theme.space[size] || theme.space.md)
-  table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0")
-    tr
-      td(height=hpx style=`height:${hpx}px;font-size:${hpx}px;line-height:${hpx}px;`) &nbsp;
+    - var hpx = typeof size === 'number' ? size : (theme.space[size] || theme.space.md)
+    table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0")
+        tr
+            td(height=hpx style=`height:${hpx}px;font-size:${hpx}px;line-height:${hpx}px;`) &nbsp;
 
 //- Đường kẻ ngang
 mixin divider(opts)
-  - var o = Object.assign({ color: theme.color.border, thickness: 1, spacing: 'md' }, opts)
-  - var sp = theme.space[o.spacing] || o.spacing
-  table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0")
-    tr
-      td(style=`padding:${sp}px 0;`)
-        table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0")
-          tr
-            td(height=o.thickness style=`height:${o.thickness}px;font-size:0;line-height:0;background-color:${o.color};border-top:${o.thickness}px solid ${o.color};`) &nbsp;
+    - var o = Object.assign({ color: theme.color.border, thickness: 1, spacing: 'md' }, opts)
+    - var sp = theme.space[o.spacing] || o.spacing
+    table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0")
+        tr
+            td(style=`padding:${sp}px 0;`)
+                table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0")
+                    tr
+                        td(height=o.thickness style=`height:${o.thickness}px;font-size:0;line-height:0;background-color:${o.color};border-top:${o.thickness}px solid ${o.color};`) &nbsp;
 
 //- ------------------------------------------------------------
 //- CỘT (hybrid / spongy) — tự xếp chồng trên mobile, KHÔNG cần media query.
@@ -50,16 +50,16 @@ mixin divider(opts)
 //- Tổng width các cột nên = theme.width (hoặc width của section).
 //- ------------------------------------------------------------
 mixin columns(opts)
-  - var o = Object.assign({ align: 'center', padding: [0, 0] }, opts)
-  table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0")&attributes(attributes)
-    tr
-      td(align=o.align valign="top" style=`${h.pad(...o.padding)}font-size:0;text-align:${o.align};`)
-        block
+    - var o = Object.assign({ align: 'center', padding: [0, 0] }, opts)
+    table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0")&attributes(attributes)
+        tr
+            td(align=o.align valign="top" style=`${h.pad(...o.padding)}font-size:0;text-align:${o.align};`)
+                block
 
 mixin column(width, opts)
-  - var o = Object.assign({ padding: ['sm', 'sm'], valign: 'top', align: 'left' }, opts)
-  div(style=`display:inline-block;width:100%;max-width:${width}px;vertical-align:${o.valign};text-align:${o.align};`)
-    table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0")
-      tr
-        td(valign=o.valign style=`${h.pad(...o.padding)}text-align:${o.align};`)
-          block
+    - var o = Object.assign({ padding: ['sm', 'sm'], valign: 'top', align: 'left' }, opts)
+    div(style=`display:inline-block;width:100%;max-width:${width}px;vertical-align:${o.valign};text-align:${o.align};`)
+        table(role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0")
+            tr
+                td(valign=o.valign style=`${h.pad(...o.padding)}text-align:${o.align};`)
+                    block
