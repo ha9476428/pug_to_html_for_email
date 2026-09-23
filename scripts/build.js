@@ -237,7 +237,8 @@ function copyStaticPages() {
         if (!fs.existsSync(dir)) continue;
         fs.cpSync(dir, path.join(DIST, outName), {
             recursive: true,
-            filter: (src) => !STATIC_EXCLUDE_DIRS.has(path.relative(dir, src).split(path.sep)[0]),
+            filter: (src) =>
+                !STATIC_EXCLUDE_DIRS.has(path.relative(dir, src).split(path.sep)[0]) && path.basename(src) !== '.DS_Store',
         });
         copied.push(outName);
     }

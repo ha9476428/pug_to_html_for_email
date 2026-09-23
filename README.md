@@ -96,6 +96,8 @@ npm run test:pixel
 
 Đặt ảnh thiết kế vào `landing/design/<width>.png` (vd `landing/design/1200.png`) trước khi chạy — xem chi tiết ở [`landing/design/README.md`](landing/design/README.md). Breakpoint chưa có ảnh sẽ tự bị bỏ qua.
 
+Muốn so bằng mắt thay vì chờ script: mở [`landing/design/overlay.html`](landing/design/overlay.html) (double-click hoặc `open landing/design/overlay.html`, không cần server) — chọn ảnh thiết kế, kéo chồng lên trang thật với độ mờ tuỳ chỉnh để canh khớp.
+
 ## Biến dùng chung — không khai báo lại
 
 `theme` và `h` được build script truyền vào **mọi** file `.pug`:

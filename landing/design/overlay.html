@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Design Overlay — So pixel với landing page</title>
+<style>
+    :root {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: #E5E7EB; }
+
+    .toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 16px;
+        background: #1F2937;
+        color: #fff;
+        font-size: 13px;
+    }
+    .toolbar label { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .toolbar select, .toolbar input[type="file"] { font: inherit; }
+    .toolbar input[type="range"] { width: 140px; }
+    .toolbar button {
+        font: inherit;
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: 1px solid #4B5563;
+        background: #374151;
+        color: #fff;
+        cursor: pointer;
+    }
+    .toolbar button:hover { background: #4B5563; }
+    .hint { color: #9CA3AF; font-size: 12px; }
+    .opacity-label { min-width: 34px; display: inline-block; }
+
+    .stage-wrap {
+        display: flex;
+        justify-content: center;
+        padding: 32px 16px 64px;
+        overflow-x: auto;
+    }
+    .stage {
+        position: relative;
+        width: 1200px;
+        background: #fff;
+        box-shadow: 0 0 0 1px #D1D5DB, 0 12px 32px rgba(0,0,0,.12);
+        flex-shrink: 0;
+    }
+    .stage iframe {
+        display: block;
+        width: 100%;
+        height: 3200px;
+        border: 0;
+    }
+    .stage img.overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: auto;
+        pointer-events: none;
+        opacity: 0.5;
+        user-select: none;
+        -webkit-user-drag: none;
+    }
+    .stage img.overlay.draggable { pointer-events: auto; cursor: grab; }
+    .stage img.overlay.dragging { cursor: grabbing; }
+    .stage img.overlay.hidden { display: none; }
+
+    .empty-state {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #9CA3AF;
+        font-size: 13px;
+        pointer-events: none;
+    }
+</style>
+</head>
+<body>
+
+    <div class="toolbar">
+        <label>Breakpoint
+            <select id="bp">
+                <option value="1200">1200px</option>
+                <option value="768">768px</option>
+                <option value="375">375px</option>
+            </select>
+        </label>
+
+        <label>Ảnh thiết kế
+            <input type="file" id="file" accept="image/*" />
+        </label>
+
+        <label>
+            <input type="checkbox" id="toggle" checked />
+            Hiện overlay
+        </label>
+
+        <label>Độ mờ
+            <input type="range" id="opacity" min="0" max="100" value="50" />
+            <span id="opacityLabel" class="opacity-label">50%</span>
+        </label>
+
+        <label>Blend
+            <select id="blend">
+                <option value="normal">Normal (mờ)</option>
+                <option value="difference">Difference (chỗ khác nổi sáng)</option>
+            </select>
+        </label>
+
+        <button id="reset" type="button">Reset vị trí</button>
+
+        <span class="hint">Kéo ảnh để canh chỉnh · phím mũi tên nhích 1px (giữ Shift = 10px)</span>
+    </div>
+
+    <div class="stage-wrap">
+        <div class="stage" id="stage">
+            <iframe id="pageFrame" src="../index.html" title="landing page"></iframe>
+            <div class="empty-state" id="emptyState">Chọn ảnh thiết kế (PNG) ở góc trên để bắt đầu so sánh</div>
+            <img class="overlay hidden" id="overlayImg" alt="" />
+        </div>
+    </div>
+
+    <script>
+        var bpSelect = document.getElementById('bp');
+        var fileInput = document.getElementById('file');
+        var toggle = document.getElementById('toggle');
+        var opacityInput = document.getElementById('opacity');
+        var opacityLabel = document.getElementById('opacityLabel');
+        var blendSelect = document.getElementById('blend');
+        var resetBtn = document.getElementById('reset');
+        var stage = document.getElementById('stage');
+        var frame = document.getElementById('pageFrame');
+        var img = document.getElementById('overlayImg');
+        var emptyState = document.getElementById('emptyState');
+
+        var offset = { x: 0, y: 0 };
+        var drag = null;
+
+        function applyBreakpoint() {
+            stage.style.width = bpSelect.value + 'px';
+        }
+
+        function applyOpacity() {
+            img.style.opacity = opacityInput.value / 100;
+            opacityLabel.textContent = opacityInput.value + '%';
+        }
+
+        function applyBlend() {
+            img.style.mixBlendMode = blendSelect.value;
+        }
+
+        function applyVisibility() {
+            img.classList.toggle('hidden', !toggle.checked || !img.src);
+        }
+
+        function applyTransform() {
+            img.style.transform = 'translate(' + offset.x + 'px, ' + offset.y + 'px)';
+        }
+
+        function loadFile(file) {
+            if (!file) return;
+            var url = URL.createObjectURL(file);
+            img.src = url;
+            img.classList.add('draggable');
+            emptyState.style.display = 'none';
+            applyVisibility();
+        }
+
+        // Tự động thử nạp landing/design/<bp>.png nếu đang mở qua http (không hoạt động
+        // khi mở trực tiếp bằng file:// do trình duyệt chặn fetch cross-file) — chọn
+        // file thủ công ở trên luôn hoạt động trong mọi trường hợp.
+        function tryAutoLoad() {
+            var url = bpSelect.value + '.png';
+            fetch(url, { method: 'HEAD' })
+                .then(function (res) {
+                    if (res.ok) {
+                        img.src = url;
+                        img.classList.add('draggable');
+                        emptyState.style.display = 'none';
+                        applyVisibility();
+                    }
+                })
+                .catch(function () { /* mở bằng file:// hoặc chưa có ảnh — bỏ qua */ });
+        }
+
+        bpSelect.addEventListener('change', function () {
+            applyBreakpoint();
+            offset = { x: 0, y: 0 };
+            applyTransform();
+        });
+        fileInput.addEventListener('change', function (e) {
+            loadFile(e.target.files[0]);
+        });
+        toggle.addEventListener('change', applyVisibility);
+        opacityInput.addEventListener('input', applyOpacity);
+        blendSelect.addEventListener('change', applyBlend);
+        resetBtn.addEventListener('click', function () {
+            offset = { x: 0, y: 0 };
+            applyTransform();
+        });
+
+        img.addEventListener('mousedown', function (e) {
+            if (img.classList.contains('hidden')) return;
+            drag = { startX: e.clientX, startY: e.clientY, origX: offset.x, origY: offset.y };
+            img.classList.add('dragging');
+            e.preventDefault();
+        });
+        window.addEventListener('mousemove', function (e) {
+            if (!drag) return;
+            offset.x = drag.origX + (e.clientX - drag.startX);
+            offset.y = drag.origY + (e.clientY - drag.startY);
+            applyTransform();
+        });
+        window.addEventListener('mouseup', function () {
+            if (drag) {
+                drag = null;
+                img.classList.remove('dragging');
+            }
+        });
+
+        window.addEventListener('keydown', function (e) {
+            var keys = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
+            if (!keys[e.key]) return;
+            e.preventDefault();
+            var step = e.shiftKey ? 10 : 1;
+            offset.x += keys[e.key][0] * step;
+            offset.y += keys[e.key][1] * step;
+            applyTransform();
+        });
+
+        applyBreakpoint();
+        applyOpacity();
+        applyBlend();
+        applyTransform();
+        tryAutoLoad();
+    </script>
+
+</body>
+</html>
