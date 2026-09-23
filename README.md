@@ -88,7 +88,7 @@ Xem tại `http://localhost:3000/landing/index.html` (hoặc mở thẳng `landi
 
 ### Test pixel-perfect
 
-So `landing/index.html` với ảnh thiết kế (PNG) tại từng breakpoint 1200/768/375, dùng Playwright chụp ảnh thực tế + `pixelmatch` để diff:
+So mọi trang `.html` trong `landing/` (tự phát hiện — `index.html`, `index2.html`...) với ảnh thiết kế (PNG) tại từng breakpoint 1200/768/375, dùng Playwright chụp ảnh thực tế + `pixelmatch` để diff:
 
 ```bash
 npm run test:pixel

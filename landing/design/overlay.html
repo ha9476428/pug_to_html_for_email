@@ -89,6 +89,10 @@
 <body>
 
     <div class="toolbar">
+        <label>Trang
+            <select id="page"></select>
+        </label>
+
         <label>Breakpoint
             <select id="bp">
                 <option value="1200">1200px</option>
@@ -132,6 +136,13 @@
     </div>
 
     <script>
+        // Danh sách trang trong landing/ — thêm 1 dòng ở đây mỗi khi tạo trang .html mới
+        // (vd landing/index2.html -> { id: 'index2', label: 'index2.html' }).
+        var PAGES = [
+            { id: 'index', label: 'index.html' },
+        ];
+
+        var pageSelect = document.getElementById('page');
         var bpSelect = document.getElementById('bp');
         var fileInput = document.getElementById('file');
         var toggle = document.getElementById('toggle');
@@ -146,6 +157,16 @@
 
         var offset = { x: 0, y: 0 };
         var drag = null;
+
+        function populatePages() {
+            pageSelect.innerHTML = PAGES.map(function (p) {
+                return '<option value="' + p.id + '">' + p.label + '</option>';
+            }).join('');
+        }
+
+        function applyPage() {
+            frame.src = '../' + pageSelect.value + '.html';
+        }
 
         function applyBreakpoint() {
             stage.style.width = bpSelect.value + 'px';
@@ -177,11 +198,11 @@
             applyVisibility();
         }
 
-        // Tự động thử nạp landing/design/<bp>.png nếu đang mở qua http (không hoạt động
-        // khi mở trực tiếp bằng file:// do trình duyệt chặn fetch cross-file) — chọn
-        // file thủ công ở trên luôn hoạt động trong mọi trường hợp.
+        // Tự động thử nạp landing/design/<trang>/<bp>.png nếu đang mở qua http (không
+        // hoạt động khi mở trực tiếp bằng file:// do trình duyệt chặn fetch cross-file) —
+        // chọn file thủ công ở trên luôn hoạt động trong mọi trường hợp.
         function tryAutoLoad() {
-            var url = bpSelect.value + '.png';
+            var url = pageSelect.value + '/' + bpSelect.value + '.png';
             fetch(url, { method: 'HEAD' })
                 .then(function (res) {
                     if (res.ok) {
@@ -194,10 +215,21 @@
                 .catch(function () { /* mở bằng file:// hoặc chưa có ảnh — bỏ qua */ });
         }
 
+        pageSelect.addEventListener('change', function () {
+            applyPage();
+            offset = { x: 0, y: 0 };
+            applyTransform();
+            img.src = '';
+            img.classList.remove('draggable');
+            emptyState.style.display = 'flex';
+            applyVisibility();
+            tryAutoLoad();
+        });
         bpSelect.addEventListener('change', function () {
             applyBreakpoint();
             offset = { x: 0, y: 0 };
             applyTransform();
+            tryAutoLoad();
         });
         fileInput.addEventListener('change', function (e) {
             loadFile(e.target.files[0]);
@@ -239,6 +271,8 @@
             applyTransform();
         });
 
+        populatePages();
+        applyPage();
         applyBreakpoint();
         applyOpacity();
         applyBlend();
