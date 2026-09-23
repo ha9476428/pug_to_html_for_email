@@ -228,11 +228,17 @@ function buildOneHtml(srcDir, rel, outName) {
 }
 
 /** Copy đệ quy 1 thư mục static (landing page...) nguyên trạng vào dist/, không qua Pug/juice. */
+// Thư mục con tên này không được copy vào dist/ (fixture test, không phải nội dung trang).
+const STATIC_EXCLUDE_DIRS = new Set(['design']);
+
 function copyStaticPages() {
     const copied = [];
     for (const { dir, outName } of STATIC_PAGES) {
         if (!fs.existsSync(dir)) continue;
-        fs.cpSync(dir, path.join(DIST, outName), { recursive: true });
+        fs.cpSync(dir, path.join(DIST, outName), {
+            recursive: true,
+            filter: (src) => !STATIC_EXCLUDE_DIRS.has(path.relative(dir, src).split(path.sep)[0]),
+        });
         copied.push(outName);
     }
     return copied;

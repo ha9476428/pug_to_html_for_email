@@ -63,11 +63,16 @@ mail/
 landing/
 ├── index.html            # trang landing (link tới css/, images/ bằng đường dẫn tương đối)
 ├── css/
+│   ├── reset.css         # modern CSS reset, load trước style.css
 │   └── style.css         # toàn bộ CSS, kể cả @media 1200/768/375
-└── images/
-    └── hero-product.svg  # ảnh cho landing page — thêm ảnh mới vào đây
+├── images/
+│   └── hero-product.svg  # ảnh cho landing page — thêm ảnh mới vào đây
+└── design/                # ảnh thiết kế để test pixel-perfect — xem mục bên dưới
+    └── README.md
 
-scripts/build.js               # mail/*.pug|html -> juice (inline CSS) -> dist/ ; landing/ -> copy nguyên trạng -> dist/landing/
+scripts/
+├── build.js              # mail/*.pug|html -> juice (inline CSS) -> dist/ ; landing/ -> copy nguyên trạng -> dist/landing/
+└── pixel-test.js         # npm run test:pixel — so landing/ với ảnh thiết kế
 dist/                           # HTML đã build (cả email lẫn landing) — có commit vào git
 ```
 
@@ -80,6 +85,16 @@ npm run dev   # sửa file trong landing/ cũng tự rebuild + reload
 ```
 
 Xem tại `http://localhost:3000/landing/index.html` (hoặc mở thẳng `landing/index.html` bằng trình duyệt, không cần server).
+
+### Test pixel-perfect
+
+So `landing/index.html` với ảnh thiết kế (PNG) tại từng breakpoint 1200/768/375, dùng Playwright chụp ảnh thực tế + `pixelmatch` để diff:
+
+```bash
+npm run test:pixel
+```
+
+Đặt ảnh thiết kế vào `landing/design/<width>.png` (vd `landing/design/1200.png`) trước khi chạy — xem chi tiết ở [`landing/design/README.md`](landing/design/README.md). Breakpoint chưa có ảnh sẽ tự bị bỏ qua.
 
 ## Biến dùng chung — không khai báo lại
 

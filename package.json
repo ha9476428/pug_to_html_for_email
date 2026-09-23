@@ -8,7 +8,8 @@
     "build": "node scripts/build.js",
     "build:pretty": "node scripts/build.js --pretty",
     "dev": "node scripts/build.js --watch",
-    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "test:pixel": "node scripts/pixel-test.js"
   },
   "keywords": [
     "email",
@@ -25,5 +26,10 @@
     "js-beautify": "^2.0.3",
     "juice": "^12.1.3",
     "pug": "^3.0.4"
+  },
+  "devDependencies": {
+    "pixelmatch": "^7.2.0",
+    "playwright": "^1.63.0",
+    "pngjs": "^7.0.0"
   }
 }
