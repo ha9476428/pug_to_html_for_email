@@ -20,6 +20,8 @@ Rồi chạy:
 npm run test:pixel
 ```
 
+> Lần chạy đầu tiên (sau `npm install`) sẽ tự tải Chromium cho Playwright (~280MB, một lần duy nhất, có cache lại — script `pretest:pixel` tự lo, không cần chạy tay `npx playwright install`).
+
 Script tự quét **mọi trang `.html`** nằm trực tiếp trong `landing/` (không cần khai báo gì thêm), mở từng trang bằng Chromium (Playwright) ở đúng width tương ứng, chụp full-page, so với ảnh thiết kế bằng `pixelmatch`, in ra % sai lệch cho từng trang/breakpoint (ngưỡng mặc định 1%, đổi bằng `npm run test:pixel -- --threshold=2`).
 
 Kết quả (ảnh chụp thực tế + ảnh diff tô đỏ chỗ khác nhau) ghi vào `landing/design/output/<tên-trang>/` — thư mục này **không commit vào git** (đã thêm vào `.gitignore`), tự sinh lại mỗi lần chạy.

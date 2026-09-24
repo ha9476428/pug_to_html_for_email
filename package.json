@@ -9,6 +9,7 @@
     "build:pretty": "node scripts/build.js --pretty",
     "dev": "node scripts/build.js --watch",
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "pretest:pixel": "playwright install chromium",
     "test:pixel": "node scripts/pixel-test.js"
   },
   "keywords": [
