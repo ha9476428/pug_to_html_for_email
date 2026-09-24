@@ -55,6 +55,7 @@ mail/
 │   ├── _starter.html    # file mẫu HTML thuần để copy — xem mục bên dưới
 │   ├── welcome.pug
 │   └── order-confirmation.pug
+├── images/              # ảnh XEM THỬ LOCAL khi dev — xem mail/images/README.md (không dùng khi gửi email thật)
 └── figma/                    # component catalog — xem mục riêng bên dưới
     ├── _README.md
     ├── _figma-buttons.pug ... _figma-typography.pug
@@ -220,6 +221,18 @@ Không muốn học Pug? Copy `mail/emails/_starter.html` → `mail/emails/ten-e
 - Hiện trong `dist/index.html` và tự reload khi `npm run dev`
 
 Đổi lại: không có `theme`/`h`, block/mixin, hay nạp `mail/data/*.json` — mọi biến, style phải viết tay trong chính file `.html`. File `.pug` và `.html` dùng chung 1 thư mục `mail/emails/` và build song song, không xung đột.
+
+### Ảnh trong email
+
+Email thật **luôn cần URL ảnh đã host public** — Gmail/Outlook/Apple Mail tải ảnh qua internet khi người nhận mở email, không đọc được file trên máy bạn hay `dist/`. Xem `theme.brand.logo` trong `mail/config/theme.js` làm ví dụ (URL `placehold.co`).
+
+Muốn xem thử ảnh cục bộ khi đang code (trước khi có link host)? Đặt file vào `mail/images/`, build tự copy vào `dist/images/`:
+
+```pug
++image('images/banner.png', 'Banner khuyến mãi', 600)
+```
+
+Xem chi tiết ở [`mail/images/README.md`](mail/images/README.md) — **nhớ đổi sang URL host thật trước khi gửi**, ảnh local chỉ để xem trước lúc dev.
 
 ## Kiểm tra trước khi gửi
 

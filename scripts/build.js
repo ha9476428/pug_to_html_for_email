@@ -20,6 +20,10 @@ const FIGMA = path.join(SRC, 'figma');
 const DATA = path.join(SRC, 'data');
 const DIST = path.join(ROOT, 'dist');
 const CONFIG = path.join(SRC, 'config');
+// Ảnh dùng để XEM THỬ LOCAL khi dev — copy thẳng vào dist/images/. KHÔNG dùng để gửi
+// email thật: email client đọc HTML trực tiếp trong hộp thư, không truy cập được
+// dist/ trên máy bạn — trước khi gửi phải đổi path ảnh sang URL đã host công khai.
+const MAIL_IMAGES = path.join(SRC, 'images');
 // Trang tĩnh (landing page...) — HTML/CSS/JS viết tay, ngoài pipeline email
 // (không qua Pug/juice, giữ nguyên @media) — chỉ copy thẳng vào dist/ để xem qua port.
 const STATIC_PAGES = [{ dir: path.join(ROOT, 'landing'), outName: 'landing' }];
@@ -245,6 +249,18 @@ function copyStaticPages() {
     return copied;
 }
 
+/** Copy mail/images/ (nếu có) nguyên trạng vào dist/images/ — chỉ để xem thử local. */
+const MAIL_IMAGES_SKIP = new Set(['.DS_Store', 'README.md']);
+
+function copyMailImages() {
+    if (!fs.existsSync(MAIL_IMAGES)) return false;
+    fs.cpSync(MAIL_IMAGES, path.join(DIST, 'images'), {
+        recursive: true,
+        filter: (src) => !MAIL_IMAGES_SKIP.has(path.basename(src)),
+    });
+    return true;
+}
+
 function writeIndex(emailNames, figmaNames, staticPages) {
     const list = (names) => `<ul>${names.map((n) => `<li><a href="${n}.html">${n}</a></li>`).join('')}</ul>`;
     // Figma: chỉ link tới trang tổng hợp figma/index.html, không liệt kê từng component riêng.
@@ -347,6 +363,8 @@ function buildAll() {
             }
         }
     }
+
+    if (copyMailImages()) console.log(`\nẢnh xem thử local: mail/images/ -> dist/images/ (đổi sang URL host trước khi gửi email thật)`);
 
     const staticPages = copyStaticPages();
     if (staticPages.length) console.log(`\nStatic pages: ${staticPages.join(', ')}`);
