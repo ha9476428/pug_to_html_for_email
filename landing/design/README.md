@@ -17,7 +17,7 @@ landing/design/index2/375.png
 Rồi chạy:
 
 ```bash
-npm run test:pixel
+npm run test:pixel      # chạy trong landing/ (hoặc từ thư mục gốc repo)
 ```
 
 > Lần chạy đầu tiên (sau `npm install`) sẽ tự tải Chromium cho Playwright (~280MB, một lần duy nhất, có cache lại — script `pretest:pixel` tự lo, không cần chạy tay `npx playwright install`).
@@ -36,7 +36,7 @@ Ngoài test tự động, có công cụ mở bằng trình duyệt để tự t
 open landing/design/overlay.html
 ```
 
-(hoặc double-click file trong Finder — không cần server, mở thẳng bằng `file://` là chạy được)
+(hoặc double-click file trong Finder — không cần server, mở thẳng bằng `file://` là chạy được). Mở qua dev server (`npm run dev` trong `landing/`, rồi vào `http://localhost:3001/design/overlay.html`) thì tool tự nạp luôn ảnh `design/<trang>/<width>.png` nếu có.
 
 - Chọn **trang** (`index.html`, `index2.html`...) ở dropdown đầu tiên
 - Chọn **breakpoint** (1200/768/375) — trang bên dưới tự co theo đúng width đó (kể cả `@media`)

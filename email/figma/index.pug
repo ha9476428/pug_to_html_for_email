@@ -1,0 +1,37 @@
+//- ⚠️ FILE TỰ SINH — đừng sửa tay, sẽ bị ghi đè ở lần build kế tiếp.
+//- Xem _README.md để biết cách thêm component mới.
+//-
+//- Trang TỔNG HỢP DUY NHẤT — gộp toàn bộ component trong email/figma/,
+//- giống trang "component library" trong Figma. Tự quét mọi file
+//- _figma-*.pug trong thư mục này mỗi lần build.
+extends ../layouts/layout-base
+
+block vars
+    - var title = 'Component Catalog — Overview'
+
+block content
+    +section({ padding: ['xl', 'lg', 'md'] })
+        +heading(1) Component Catalog
+        +spacer('xs')
+        +text({ color: theme.color.textMuted }) Tổng hợp toàn bộ component trong email/figma/.
+
+    +divider
+    include ./_figma-buttons
+    +divider
+    include ./_figma-colors
+    +divider
+    include ./_figma-columns
+    +divider
+    include ./_figma-comment-markers
+    +divider
+    include ./_figma-footer
+    +divider
+    include ./_figma-header
+    +divider
+    include ./_figma-image
+    +divider
+    include ./_figma-info-table
+    +divider
+    include ./_figma-link
+    +divider
+    include ./_figma-typography
