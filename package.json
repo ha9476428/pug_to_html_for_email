@@ -1,36 +1,21 @@
 {
   "name": "pug_to_html_for_email",
   "version": "1.0.0",
-  "description": "Email HTML templates viết bằng Pug (layout / block / mixin), tương thích Outlook, build ra HTML đã inline CSS.",
+  "description": "2 project tách riêng: email/ (Pug -> HTML inline CSS, tương thích email client) và landing/ (HTML/CSS viết tay, responsive).",
   "private": true,
   "license": "MIT",
-  "scripts": {
-    "build": "node scripts/build.js",
-    "build:pretty": "node scripts/build.js --pretty",
-    "dev": "node scripts/build.js --watch",
-    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
-    "pretest:pixel": "playwright install chromium",
-    "test:pixel": "node scripts/pixel-test.js"
-  },
-  "keywords": [
+  "workspaces": [
     "email",
-    "pug",
-    "outlook",
-    "html-email",
-    "mjml-alternative"
+    "landing"
   ],
+  "scripts": {
+    "dev:email": "npm run dev -w email",
+    "build:email": "npm run build -w email",
+    "build:email:pretty": "npm run build:pretty -w email",
+    "dev:landing": "npm run dev -w landing",
+    "test:pixel": "npm run test:pixel -w landing"
+  },
   "engines": {
     "node": ">=20"
-  },
-  "dependencies": {
-    "chokidar": "^5.0.0",
-    "js-beautify": "^2.0.3",
-    "juice": "^12.1.3",
-    "pug": "^3.0.4"
-  },
-  "devDependencies": {
-    "pixelmatch": "^7.2.0",
-    "playwright": "^1.63.0",
-    "pngjs": "^7.0.0"
   }
 }

@@ -1,0 +1,16 @@
+//- File bắt đầu bằng "_" sẽ KHÔNG được build.
+//- Copy file này thành `ten-email.pug` để tạo email mới.
+//- Dữ liệu mẫu (tuỳ chọn): tạo `email/data/ten-email.json` — build sẽ tự nạp.
+extends ../layouts/layout-base
+
+block vars
+    - var title = 'Tiêu đề email'
+    - var preheader = 'Dòng xem trước trong hộp thư'
+
+block content
+    +section
+        +heading(1) Tiêu đề
+        +spacer('md')
+        +text Nội dung email...
+        +spacer('lg')
+        +button('Call to action', 'https://example.com')

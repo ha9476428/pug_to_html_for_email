@@ -1,0 +1,8 @@
+//- Nội dung demo "Footer" — partial dùng chung cho mọi email (email/partials/footer.pug),
+//- không phải mixin trong email/mixins/.
++section({ padding: ['lg', 'lg', 'sm'] })
+    +heading(2) Footer
+    +spacer('xs')
+    +text({ color: theme.color.textMuted }) Footer mặc định dùng trong mọi email — email/partials/footer.pug
+
+include ../partials/footer

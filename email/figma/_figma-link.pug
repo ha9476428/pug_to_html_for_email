@@ -1,0 +1,11 @@
+//- Nội dung demo "Link" — dùng chung bởi link.pug (trang riêng) và index.pug (trang tổng hợp).
++section({ padding: ['lg', 'lg', 'sm'] })
+    +heading(2) Link
+    +spacer('xs')
+    +text({ color: theme.color.textMuted }) link(href, opts) — email/mixins/_content.pug
+
++section({ padding: [0, 'lg', 'lg'] })
+    +text
+        | Đoạn văn có chứa
+        | #[+link('#') liên kết mẫu]
+        | ở giữa nội dung.
