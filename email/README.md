@@ -218,6 +218,35 @@ Không muốn học Pug? Copy cả thư mục `pages/_starter-html/` → `pages/
 
 Đổi lại: không có `theme`/`h`, block/mixin, hay nạp `data.json` — mọi biến, style phải viết tay trong chính file `.html`. File `.pug` và `.html` để chung 1 thư mục được, mỗi file build ra 1 file `.html` cùng tên. Thư mục chưa có file nguồn nào thì tạm bỏ qua.
 
+#### Ghép nhiều file HTML nhỏ (`@include`)
+
+Email HTML có thể tách thành nhiều file nhỏ (header, footer, banner...) rồi ghép lại bằng comment `@include`. Khi build, dòng comment được thay bằng nội dung file:
+
+```html
+<table role="presentation" width="600">
+    <!-- @include _header.html -->               <!-- tương đối với file đang viết -->
+    <tr><td>Nội dung riêng của email...</td></tr>
+    <!-- @include /partials/footer.html -->      <!-- bắt đầu bằng "/" = tính từ thư mục email/ -->
+</table>
+```
+
+```
+pages/quater-3/
+├── demo1.html          # <!-- @include _header.html --> ... <!-- @include _footer.html -->
+├── demo2.html          # dùng lại cùng _header.html, _footer.html
+├── _header.html        # file nhỏ: tên bắt đầu bằng "_" => KHÔNG build thành email riêng
+├── _footer.html
+└── images/
+```
+
+- File nhỏ dùng chung cho **1 thư mục** → để ngay trong thư mục đó, đặt tên bắt đầu bằng `_`.
+- File nhỏ dùng chung cho **mọi email** → để trong `email/partials/`, include bằng đường dẫn `/partials/ten-file.html`.
+- File nhỏ include tiếp file khác được. Include vòng lặp (A → B → A) hoặc sai đường dẫn thì build báo lỗi, ghi rõ file nào.
+- File nhỏ chỉ chứa **đoạn HTML** (vd vài dòng `<tr>...</tr>`), không cần `<html>`/`<head>`. CSS trong `<style>` của file email chính vẫn được inline vào cả phần ghép từ file nhỏ.
+- `npm run dev`: sửa file nhỏ là mọi email dùng nó tự build lại.
+
+Xem ví dụ có sẵn: `pages/_starter-html/index.html` ghép `pages/_starter-html/_footer.html`.
+
 ### Ảnh trong email
 
 Email thật **luôn cần URL ảnh đã host public** — Gmail/Outlook/Apple Mail tải ảnh qua internet khi người nhận mở email, không đọc được file trên máy bạn hay `dist/`. Xem `theme.brand.logo` trong `config/theme.js` làm ví dụ (URL `placehold.co`).
