@@ -1,6 +1,6 @@
 # landing/
 
-Landing page viết tay bằng **HTML/CSS/JS thuần** — không qua Pug, không qua juice, nên `@media`, CSS trong `css/`, ảnh trong `images/` giữ nguyên trạng. Không có bước build: file trong thư mục này chính là bản chạy thật.
+Landing page viết tay bằng **HTML/CSS/JS thuần** — không qua Pug, không qua juice, nên `@media`, CSS trong `css/`, ảnh trong `images/` giữ nguyên trạng. Khi dev thì chạy thẳng file nguồn; `npm run build` copy các file trang ra `dist/` để deploy.
 
 > Email (Pug → HTML inline CSS) nằm ở project riêng [`../email/`](../email/README.md). Pipeline email **xoá sạch `@media`** khi build (email client không hỗ trợ media query đáng tin cậy), nên landing cần responsive thật phải tách hẳn ra đây.
 
@@ -10,10 +10,11 @@ Landing page viết tay bằng **HTML/CSS/JS thuần** — không qua Pug, khôn
 cd landing
 npm install          # hoặc chạy 1 lần `npm install` ở thư mục gốc repo
 npm run dev          # http://localhost:3001 — tự reload khi sửa file
+npm run build        # copy trang ra dist/ để deploy
 npm run test:pixel   # so trang với ảnh thiết kế (xem bên dưới)
 ```
 
-Hoặc từ thư mục gốc repo: `npm run dev:landing`, `npm run test:pixel`.
+Hoặc từ thư mục gốc repo: `npm run dev:landing`, `npm run build:landing`, `npm run test:pixel`.
 
 Không cần server cũng được — mở thẳng `index.html` bằng trình duyệt.
 
@@ -30,10 +31,18 @@ landing/
 │   └── hero-product.svg  # ảnh cho landing page — thêm ảnh mới vào đây
 ├── design/               # ảnh thiết kế để test pixel-perfect + overlay.html
 │   └── README.md
-└── scripts/
-    ├── dev.js            # npm run dev — static server + live reload
-    └── pixel-test.js     # npm run test:pixel — so trang với ảnh thiết kế
+├── scripts/
+│   ├── dev.js            # npm run dev — static server + live reload
+│   ├── build.js          # npm run build — copy trang ra dist/
+│   └── pixel-test.js     # npm run test:pixel — so trang với ảnh thiết kế
+└── dist/                 # bản build để deploy — có commit vào git
 ```
+
+## `dist/`
+
+`npm run build` xoá rồi tạo lại `dist/`, copy mọi file/thư mục của trang (`*.html`, `css/`, `images/`, `js/`...) — **trừ** tooling: `scripts/`, `design/`, `package.json`, `README.md`. Thêm thư mục mới (vd `js/`, `fonts/`) là tự được copy, không cần sửa script.
+
+`dist/` có commit vào git — sau khi sửa landing, nhớ `npm run build` rồi commit lại `dist/` cùng lúc.
 
 ## Test pixel-perfect
 

@@ -4,8 +4,8 @@ Repo gồm **2 project tách riêng**, mỗi project có `package.json`, script 
 
 | Thư mục | Dùng để | Công nghệ | Chạy |
 |---|---|---|---|
-| [`email/`](email/README.md) | Làm **email HTML** (Gmail, Apple Mail, Outlook.com, app di động) | Pug → juice (inline 100% CSS, xoá `@media`) → `email/dist/` | `npm run dev:email` → http://localhost:3000 |
-| [`landing/`](landing/README.md) | Làm **landing page** responsive | HTML/CSS/JS viết tay, giữ nguyên `@media`, không cần build | `npm run dev:landing` → http://localhost:3001 |
+| [`email/`](email/README.md) | Làm **email HTML** (Gmail, Apple Mail, Outlook.com, app di động) | Pug → juice (inline 100% CSS, xoá `@media`) → build ra `email/dist/` | `npm run dev:email` → http://localhost:3000 |
+| [`landing/`](landing/README.md) | Làm **landing page** responsive | HTML/CSS/JS viết tay, giữ nguyên `@media` → build ra `landing/dist/` | `npm run dev:landing` → http://localhost:3001 |
 
 Hai project không dùng chung code hay thư mục build — sửa bên này không ảnh hưởng bên kia.
 
@@ -23,18 +23,23 @@ Lệnh chạy từ thư mục gốc:
 
 ```bash
 npm run dev:email           # email: build + watch + live reload (port 3000)
-npm run build:email         # email: build HTML gọn vào email/dist/ (dùng để gửi)
-npm run build:email:pretty  # email: build HTML có thụt lề, dễ đọc
-
 npm run dev:landing         # landing: static server + live reload (port 3001)
+
+npm run build               # build cả 2: email -> email/dist/, landing -> landing/dist/
+npm run build:email         # chỉ email: HTML gọn vào email/dist/ (dùng để gửi)
+npm run build:email:pretty  # chỉ email: HTML có thụt lề, dễ đọc
+npm run build:landing       # chỉ landing: copy trang vào landing/dist/ (dùng để deploy)
+
 npm run test:pixel          # landing: so trang với ảnh thiết kế
 ```
 
 Hoặc `cd email` / `cd landing` rồi chạy `npm run dev`, `npm run build`... như một project bình thường. Chi tiết từng bên xem README trong thư mục tương ứng.
 
 ```
-email/      # project email — xem email/README.md
-landing/    # project landing page — xem landing/README.md
+email/          # project email — xem email/README.md
+└── dist/       # ⬅ bản build email
+landing/        # project landing page — xem landing/README.md
+└── dist/       # ⬅ bản build landing
 ```
 
 ## License

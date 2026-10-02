@@ -10,9 +10,11 @@
   ],
   "scripts": {
     "dev:email": "npm run dev -w email",
+    "dev:landing": "npm run dev -w landing",
+    "build": "npm run build -w email && npm run build -w landing",
     "build:email": "npm run build -w email",
     "build:email:pretty": "npm run build:pretty -w email",
-    "dev:landing": "npm run dev -w landing",
+    "build:landing": "npm run build -w landing",
     "test:pixel": "npm run test:pixel -w landing"
   },
   "engines": {
