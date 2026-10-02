@@ -3,7 +3,7 @@
  * Build email: Pug -> HTML -> inline CSS (juice) -> ../dist/email/
  *
  * Mỗi email là 1 thư mục trong pages/ (bắt đầu bằng "_" => không build):
- *   pages/<tên>/index.pug | index.html   nguồn email (chọn 1 trong 2)
+ *   pages/<tên>/index.pug | index.html   nguồn email (chọn 1 trong 2; hoặc 1 file .pug/.html tên bất kỳ)
  *   pages/<tên>/data.json                 dữ liệu mẫu (tuỳ chọn, chỉ cho .pug)
  *   pages/<tên>/images/                   ảnh xem thử local (tuỳ chọn)
  * Build ra thư mục riêng cho từng email:
@@ -230,24 +230,46 @@ function buildHtml(file, outName) {
 }
 
 /**
+ * Tìm file nguồn của 1 email trong pages/<name>/:
+ *   - ưu tiên index.pug / index.html
+ *   - nếu không có, dùng file .pug/.html DUY NHẤT trong thư mục (tên gì cũng được,
+ *     vd quater-3.pug) — file bắt đầu bằng "_" không tính (partial)
+ * Trả về null nếu thư mục chưa có file nguồn nào.
+ */
+function findEmailSource(dir) {
+    const index = ['index.pug', 'index.html'].filter((f) => fs.existsSync(path.join(dir, f)));
+    if (index.length > 1) throw new Error('Có cả index.pug lẫn index.html — chỉ giữ 1 file.');
+    if (index.length === 1) return path.join(dir, index[0]);
+
+    const sources = fs
+        .readdirSync(dir, { withFileTypes: true })
+        .filter((f) => f.isFile() && /\.(pug|html)$/.test(f.name) && !f.name.startsWith('_'))
+        .map((f) => f.name);
+    if (sources.length > 1) {
+        throw new Error(`Có nhiều file nguồn (${sources.join(', ')}) — đổi tên file chính thành index.pug hoặc index.html.`);
+    }
+    return sources.length ? path.join(dir, sources[0]) : null;
+}
+
+/**
  * Build 1 email từ thư mục pages/<name>/ ra dist/email/<name>/index.html.
- * Thư mục phải có đúng 1 trong 2: index.pug hoặc index.html.
+ * Trả về false nếu thư mục chưa có file nguồn (bỏ qua, không tính là lỗi).
  */
 function buildEmail(name, locals) {
     if (RESERVED_NAMES.has(name)) throw new Error(`Tên "${name}" đã dành cho dist/email/${name}/ — đổi tên thư mục email khác.`);
     const dir = path.join(PAGES, name);
-    const pugFile = path.join(dir, 'index.pug');
-    const htmlFile = path.join(dir, 'index.html');
-    const hasPug = fs.existsSync(pugFile);
-    const hasHtml = fs.existsSync(htmlFile);
-    if (hasPug && hasHtml) throw new Error('Có cả index.pug lẫn index.html — chỉ giữ 1 file.');
-    if (!hasPug && !hasHtml) throw new Error('Thiếu index.pug hoặc index.html.');
+    const source = findEmailSource(dir);
+    if (!source) {
+        console.log(`  – bỏ qua pages/${name}/ (chưa có file .pug hoặc .html)`);
+        return false;
+    }
 
     const outName = `${name}/index`;
-    if (hasPug) buildPug(pugFile, locals, loadData(path.join(dir, 'data.json')), outName);
-    else buildHtml(htmlFile, outName);
+    if (source.endsWith('.pug')) buildPug(source, locals, loadData(path.join(dir, 'data.json')), outName);
+    else buildHtml(source, outName);
 
     if (copyEmailImages(name)) console.log(`      ảnh: pages/${name}/images/ -> dist/email/${name}/images/`);
+    return true;
 }
 
 /**
@@ -341,8 +363,7 @@ function buildAll() {
     console.log('\nBuilding emails...');
     for (const name of listEmailDirs()) {
         try {
-            buildEmail(name, locals);
-            emailNames.push(name);
+            if (buildEmail(name, locals)) emailNames.push(name);
         } catch (err) {
             failed++;
             console.error(`  ✗ pages/${name}/\n${err.message}\n`);
