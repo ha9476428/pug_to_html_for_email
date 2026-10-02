@@ -30,7 +30,7 @@ Hoặc từ thư mục gốc repo: `npm run dev:email`, `npm run build:email`, `
 email/
 ├── package.json
 ├── scripts/
-│   └── build.js         # emails/*.pug|html -> juice (inline CSS) -> dist/
+│   └── build.js         # emails/<tên>/index.pug|html -> juice (inline CSS) -> dist/<tên>/index.html
 ├── config/
 │   ├── theme.js         # ⭐ biến dùng chung: màu, font, size, spacing, brand
 │   └── helpers.js       # h.font(), h.pad(), h.reset
@@ -44,19 +44,31 @@ email/
 ├── partials/
 │   ├── header.pug       # header mặc định (logo)
 │   └── footer.pug       # footer mặc định
-├── data/
-│   └── <tên-email>.json # dữ liệu mẫu, tự nạp theo tên file email
-├── emails/
-│   ├── _starter.pug     # file mẫu Pug để copy (bắt đầu bằng "_" => không build)
-│   ├── _starter.html    # file mẫu HTML thuần để copy — xem mục bên dưới
-│   ├── welcome.pug
-│   └── order-confirmation.pug
-├── images/              # ảnh XEM THỬ LOCAL khi dev — xem images/README.md (không dùng khi gửi email thật)
+├── emails/              # ⭐ mỗi email = 1 thư mục riêng
+│   ├── _starter/        # mẫu Pug để copy (bắt đầu bằng "_" => không build)
+│   ├── _starter-html/   # mẫu HTML thuần để copy — xem mục bên dưới
+│   ├── welcome/
+│   │   ├── index.pug    # nguồn email (index.pug HOẶC index.html)
+│   │   └── images/      # ảnh XEM THỬ LOCAL của email này (không dùng khi gửi thật)
+│   ├── order-confirmation/
+│   │   ├── index.pug
+│   │   ├── data.json    # dữ liệu mẫu (tuỳ chọn) — key thành biến trong template
+│   │   └── images/
+│   └── flash-sale/
+│       ├── index.html   # email viết thẳng bằng HTML
+│       └── images/
 ├── figma/               # component catalog — xem mục riêng bên dưới
 │   ├── _README.md
 │   ├── _figma-buttons.pug ... _figma-typography.pug
 │   └── index.pug        # ⚠️ file TỰ SINH, đừng sửa tay
-└── dist/                # HTML đã build — có commit vào git
+└── dist/                # HTML đã build — mỗi email 1 thư mục, có commit vào git
+    ├── index.html       # trang liệt kê mọi email (khi npm run dev)
+    ├── welcome/
+    │   ├── index.html
+    │   └── images/      # copy từ emails/welcome/images/ (nếu có ảnh)
+    ├── order-confirmation/
+    ├── flash-sale/
+    └── figma/
 ```
 
 ## Biến dùng chung — không khai báo lại
@@ -168,31 +180,41 @@ Build tự cảnh báo (console) khi:
 
 ## Tạo email mới
 
-1. Copy `emails/_starter.pug` → `emails/ten-email.pug`
-2. (Tuỳ chọn) tạo `data/ten-email.json` — các key trong JSON thành biến trong template
-3. `npm run dev` và mở `http://localhost:3000`
+1. Copy cả thư mục `emails/_starter/` → `emails/ten-email/` (tên thư mục = tên email, không bắt đầu bằng `_`, không đặt là `figma`)
+2. Sửa `emails/ten-email/index.pug`
+3. (Tuỳ chọn) tạo `emails/ten-email/data.json` — các key trong JSON thành biến trong template
+4. (Tuỳ chọn) bỏ ảnh vào `emails/ten-email/images/`
+5. `npm run dev` và mở `http://localhost:3000` → build ra `dist/ten-email/index.html`
+
+Email dùng `extends /layouts/layout-base` (đường dẫn tính từ `email/`) nên không phải sửa đường dẫn khi đổi tên/di chuyển thư mục.
 
 ### Viết thẳng bằng HTML (không dùng Pug)
 
-Không muốn học Pug? Copy `emails/_starter.html` → `emails/ten-email.html` và code HTML/CSS bình thường. Build vẫn:
+Không muốn học Pug? Copy cả thư mục `emails/_starter-html/` → `emails/ten-email/` và code HTML/CSS bình thường trong `index.html`. Build vẫn:
 
 - **Inline hết CSS** trong thẻ `<style>` vào từng thẻ (juice) — xoá `<style>` khỏi `<head>`
 - Cảnh báo email > 102KB hoặc `<a>` đổi màu thiếu `!important`
 - Hiện trong `dist/index.html` và tự reload khi `npm run dev`
 
-Đổi lại: không có `theme`/`h`, block/mixin, hay nạp `data/*.json` — mọi biến, style phải viết tay trong chính file `.html`. File `.pug` và `.html` dùng chung 1 thư mục `emails/` và build song song, không xung đột.
+Đổi lại: không có `theme`/`h`, block/mixin, hay nạp `data.json` — mọi biến, style phải viết tay trong chính file `.html`. Mỗi thư mục email chỉ chứa 1 trong 2: `index.pug` **hoặc** `index.html` (có cả hai build sẽ báo lỗi).
 
 ### Ảnh trong email
 
 Email thật **luôn cần URL ảnh đã host public** — Gmail/Outlook/Apple Mail tải ảnh qua internet khi người nhận mở email, không đọc được file trên máy bạn hay `dist/`. Xem `theme.brand.logo` trong `config/theme.js` làm ví dụ (URL `placehold.co`).
 
-Muốn xem thử ảnh cục bộ khi đang code (trước khi có link host)? Đặt file vào `images/`, build tự copy vào `dist/images/`:
+Muốn xem thử ảnh cục bộ khi đang code (trước khi có link host)? Mỗi email có thư mục `images/` riêng — đặt file vào `emails/<tên>/images/`, build tự copy vào `dist/<tên>/images/`, nên trong email chỉ cần path tương đối:
 
 ```pug
 +image('images/banner.png', 'Banner khuyến mãi', 600)
 ```
 
-Xem chi tiết ở [`images/README.md`](images/README.md) — **nhớ đổi sang URL host thật trước khi gửi**, ảnh local chỉ để xem trước lúc dev.
+```html
+<img src="images/banner.png" alt="Banner khuyến mãi" width="600" />
+```
+
+Xem được qua `http://localhost:3000/<tên>/` khi chạy `npm run dev`.
+
+⚠️ **Nhớ đổi sang URL host thật trước khi gửi** (upload lên S3, Cloudinary, CDN... rồi đổi `src`) — ảnh local chỉ để xem trước lúc dev.
 
 ## Kiểm tra trước khi gửi
 

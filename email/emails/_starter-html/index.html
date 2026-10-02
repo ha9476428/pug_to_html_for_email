@@ -1,12 +1,13 @@
 <!--
-    File bắt đầu bằng "_" sẽ KHÔNG được build.
-    Copy file này thành `ten-email.html` để tạo email viết thẳng bằng HTML
+    Thư mục bắt đầu bằng "_" sẽ KHÔNG được build.
+    Copy cả thư mục `_starter-html/` thành `emails/ten-email/` để tạo email viết thẳng bằng HTML
     (không qua Pug/mixin) — vẫn được build inline CSS (juice) + cảnh báo
     dung lượng/màu link giống hệt email viết bằng Pug.
 
     Lưu ý vì đây là HTML thuần:
     - Không có `theme`/`h`, block, mixin — tự viết style tay.
-    - Không nạp `email/data/*.json` — muốn đổi nội dung thì sửa thẳng trong file.
+    - Không nạp `data.json` — muốn đổi nội dung thì sửa thẳng trong file.
+    - Ảnh xem thử local: đặt vào `images/` cạnh file này, dùng `src="images/ten-anh.png"`.
     - CSS trong thẻ <style> dưới đây sẽ được inline vào từng thẻ khi build,
         thẻ <style> sẽ bị xoá khỏi <head> (không sót lại style nào ngoài inline).
 -->
