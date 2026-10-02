@@ -36,10 +36,15 @@ npm run test:pixel          # landing: so trang với ảnh thiết kế
 Hoặc `cd email` / `cd landing` rồi chạy `npm run dev`, `npm run build`... như một project bình thường. Chi tiết từng bên xem README trong thư mục tương ứng.
 
 ```
-email/          # project email — xem email/README.md
-└── dist/       # ⬅ bản build email
-landing/        # project landing page — xem landing/README.md
-└── dist/       # ⬅ bản build landing
+email/                  # project email — xem email/README.md
+├── emails/
+│   ├── welcome/        # mỗi email 1 thư mục: index.pug|index.html + images/
+│   └── flash-sale/
+└── dist/               # ⬅ bản build email, mỗi email 1 thư mục
+    ├── welcome/        #    index.html + images/
+    └── flash-sale/
+landing/                # project landing page — xem landing/README.md
+└── dist/               # ⬅ bản build landing
 ```
 
 ## License
