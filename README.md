@@ -22,8 +22,9 @@ Yêu cầu Node.js ≥ 20.
 Lệnh chạy từ thư mục gốc:
 
 ```bash
-npm run dev:email           # email: build + watch + live reload (port 3000)
-npm run dev:landing         # landing: static server + live reload (port 3001)
+npm run dev                 # chạy CẢ 2 cùng lúc: email (port 3000) + landing (port 3001)
+npm run dev:email           # chỉ email: build + watch + live reload (port 3000)
+npm run dev:landing         # chỉ landing: static server + live reload (port 3001)
 
 npm run build               # build cả 2: email -> dist/email/, landing -> dist/landing/
 npm run build:email         # chỉ email: HTML gọn vào dist/email/ (dùng để gửi)

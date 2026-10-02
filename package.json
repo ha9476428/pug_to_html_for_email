@@ -9,6 +9,7 @@
     "landing"
   ],
   "scripts": {
+    "dev": "concurrently -n email,landing -c blue,green \"npm:dev:email\" \"npm:dev:landing\"",
     "dev:email": "npm run dev -w email",
     "dev:landing": "npm run dev -w landing",
     "build": "npm run build -w email && npm run build -w landing",
@@ -19,5 +20,8 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.4"
   }
 }
