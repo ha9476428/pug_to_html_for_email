@@ -185,8 +185,8 @@ Build tự cảnh báo (console) khi:
 
 ## Tạo email mới
 
-1. Copy cả thư mục `pages/_starter/` → `pages/ten-email/` (tên thư mục = tên email, không bắt đầu bằng `_`, không đặt là `figma`)
-2. Sửa `pages/ten-email/index.pug`
+1. Copy cả thư mục `pages/_starter/` → `pages/ten-email/` (tên thư mục = tên email, không bắt đầu bằng `_`, không đặt là `figma`; nên dùng `-` thay dấu cách, vd `quater-3`)
+2. Sửa `pages/ten-email/index.pug` (đặt tên khác cũng được, vd `quater-3.pug`, miễn trong thư mục chỉ có **1** file `.pug`/`.html` — build luôn ra `index.html`)
 3. (Tuỳ chọn) tạo `pages/ten-email/data.json` — các key trong JSON thành biến trong template
 4. (Tuỳ chọn) bỏ ảnh vào `pages/ten-email/images/`
 5. `npm run dev` và mở `http://localhost:3000` → build ra `dist/email/ten-email/index.html`
@@ -201,7 +201,7 @@ Không muốn học Pug? Copy cả thư mục `pages/_starter-html/` → `pages/
 - Cảnh báo email > 102KB hoặc `<a>` đổi màu thiếu `!important`
 - Hiện trong trang danh sách `http://localhost:3000` và tự reload khi `npm run dev`
 
-Đổi lại: không có `theme`/`h`, block/mixin, hay nạp `data.json` — mọi biến, style phải viết tay trong chính file `.html`. Mỗi thư mục email chỉ chứa 1 trong 2: `index.pug` **hoặc** `index.html` (có cả hai build sẽ báo lỗi).
+Đổi lại: không có `theme`/`h`, block/mixin, hay nạp `data.json` — mọi biến, style phải viết tay trong chính file `.html`. Mỗi thư mục email chỉ chứa **1** file nguồn `.pug` hoặc `.html` (nên đặt tên `index`). Có nhiều file thì build ưu tiên `index.pug`/`index.html`; không có `index` mà lại có nhiều file thì báo lỗi. Thư mục chưa có file nguồn nào thì tạm bỏ qua.
 
 ### Ảnh trong email
 
