@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * Build email: Pug -> HTML -> inline CSS (juice) -> dist/
+ * Build email: Pug -> HTML -> inline CSS (juice) -> ../dist/email/
  *
- * Mỗi email là 1 thư mục trong emails/ (bắt đầu bằng "_" => không build):
- *   emails/<tên>/index.pug | index.html   nguồn email (chọn 1 trong 2)
- *   emails/<tên>/data.json                 dữ liệu mẫu (tuỳ chọn, chỉ cho .pug)
- *   emails/<tên>/images/                   ảnh xem thử local (tuỳ chọn)
+ * Mỗi email là 1 thư mục trong pages/ (bắt đầu bằng "_" => không build):
+ *   pages/<tên>/index.pug | index.html   nguồn email (chọn 1 trong 2)
+ *   pages/<tên>/data.json                 dữ liệu mẫu (tuỳ chọn, chỉ cho .pug)
+ *   pages/<tên>/images/                   ảnh xem thử local (tuỳ chọn)
  * Build ra thư mục riêng cho từng email:
- *   dist/<tên>/index.html + dist/<tên>/images/
+ *   dist/email/<tên>/index.html + dist/email/<tên>/images/
  *
  *   npm run build          build 1 lần (HTML gọn, sẵn sàng gửi)
  *   npm run build:pretty   build HTML dễ đọc
@@ -19,18 +19,18 @@ const http = require('node:http');
 const pug = require('pug');
 const juice = require('juice').default;
 
-// Thư mục gốc của project email (email/) — chứa cả nguồn lẫn dist/.
+// Thư mục gốc của project email (email/). Bản build ghi ra dist/email/ ở thư mục gốc repo.
 const ROOT = path.resolve(__dirname, '..');
 const SRC = ROOT;
-// Mỗi email = 1 thư mục con: emails/<tên>/index.pug|index.html (+ data.json, images/).
-const EMAILS = path.join(SRC, 'emails');
+// Mỗi email = 1 thư mục con: pages/<tên>/index.pug|index.html (+ data.json, images/).
+const PAGES = path.join(SRC, 'pages');
 // Component demo cho Figma/design review — mỗi component 1 file, KHÔNG phải email để gửi.
 const FIGMA = path.join(SRC, 'figma');
-const DIST = path.join(ROOT, 'dist');
+const DIST = path.join(ROOT, '..', 'dist', 'email');
 const CONFIG = path.join(SRC, 'config');
 // Các thư mục nguồn được theo dõi khi --watch (KHÔNG watch cả ROOT — sẽ dính dist/, node_modules/).
-const WATCH_DIRS = ['config', 'emails', 'figma', 'layouts', 'mixins', 'partials'].map((d) => path.join(SRC, d));
-// Tên thư mục trong dist/ đã dành cho component catalog — email không được đặt tên trùng.
+const WATCH_DIRS = ['config', 'pages', 'figma', 'layouts', 'mixins', 'partials'].map((d) => path.join(SRC, d));
+// Tên thư mục trong dist/email/ đã dành cho component catalog — email không được đặt tên trùng.
 const RESERVED_NAMES = new Set(['figma']);
 
 const args = new Set(process.argv.slice(2));
@@ -51,11 +51,11 @@ function loadData(file) {
     return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : {};
 }
 
-/** Liệt kê thư mục email trong emails/ (không tính thư mục bắt đầu bằng `_`, vd `_starter`). */
+/** Liệt kê thư mục email trong pages/ (không tính thư mục bắt đầu bằng `_`, vd `_starter`). */
 function listEmailDirs() {
-    if (!fs.existsSync(EMAILS)) return [];
+    if (!fs.existsSync(PAGES)) return [];
     return fs
-        .readdirSync(EMAILS, { withFileTypes: true })
+        .readdirSync(PAGES, { withFileTypes: true })
         .filter((d) => d.isDirectory() && !d.name.startsWith('_'))
         .map((d) => d.name)
         .sort();
@@ -230,12 +230,12 @@ function buildHtml(file, outName) {
 }
 
 /**
- * Build 1 email từ thư mục emails/<name>/ ra dist/<name>/index.html.
+ * Build 1 email từ thư mục pages/<name>/ ra dist/email/<name>/index.html.
  * Thư mục phải có đúng 1 trong 2: index.pug hoặc index.html.
  */
 function buildEmail(name, locals) {
-    if (RESERVED_NAMES.has(name)) throw new Error(`Tên "${name}" đã dành cho dist/${name}/ — đổi tên thư mục email khác.`);
-    const dir = path.join(EMAILS, name);
+    if (RESERVED_NAMES.has(name)) throw new Error(`Tên "${name}" đã dành cho dist/email/${name}/ — đổi tên thư mục email khác.`);
+    const dir = path.join(PAGES, name);
     const pugFile = path.join(dir, 'index.pug');
     const htmlFile = path.join(dir, 'index.html');
     const hasPug = fs.existsSync(pugFile);
@@ -247,18 +247,18 @@ function buildEmail(name, locals) {
     if (hasPug) buildPug(pugFile, locals, loadData(path.join(dir, 'data.json')), outName);
     else buildHtml(htmlFile, outName);
 
-    if (copyEmailImages(name)) console.log(`      ảnh: emails/${name}/images/ -> dist/${name}/images/`);
+    if (copyEmailImages(name)) console.log(`      ảnh: pages/${name}/images/ -> dist/email/${name}/images/`);
 }
 
 /**
- * Copy emails/<name>/images/ (nếu có ảnh) nguyên trạng vào dist/<name>/images/.
+ * Copy pages/<name>/images/ (nếu có ảnh) nguyên trạng vào dist/email/<name>/images/.
  * Chỉ để XEM THỬ LOCAL khi dev — email client không đọc được file trên máy bạn,
  * trước khi gửi thật phải đổi src ảnh sang URL đã host public.
  */
 const IMAGES_SKIP = new Set(['.DS_Store', '.gitkeep', 'README.md']);
 
 function copyEmailImages(name) {
-    const src = path.join(EMAILS, name, 'images');
+    const src = path.join(PAGES, name, 'images');
     if (!fs.existsSync(src)) return false;
     const files = fs.readdirSync(src, { recursive: true }).filter((f) => !IMAGES_SKIP.has(path.basename(f)));
     if (!files.length) return false;
@@ -330,7 +330,7 @@ ${includes ? `\n${includes}\n` : ''}`;
 
 function buildAll() {
     const t0 = Date.now();
-    // Xoá dist/ cũ để email đã xoá/đổi tên không còn sót lại thư mục build cũ.
+    // Xoá dist/email/ cũ để email đã xoá/đổi tên không còn sót lại thư mục build cũ.
     fs.rmSync(DIST, { recursive: true, force: true });
     fs.mkdirSync(DIST, { recursive: true });
     const locals = loadConfig();
@@ -345,7 +345,7 @@ function buildAll() {
             emailNames.push(name);
         } catch (err) {
             failed++;
-            console.error(`  ✗ emails/${name}/\n${err.message}\n`);
+            console.error(`  ✗ pages/${name}/\n${err.message}\n`);
         }
     }
 
