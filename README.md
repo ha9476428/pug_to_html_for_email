@@ -38,7 +38,7 @@ Hoặc `cd email` / `cd landing` rồi chạy `npm run dev`, `npm run build`... 
 
 ```
 email/                  # nguồn email — xem email/README.md
-├── pages/              # mỗi email 1 thư mục: index.pug|index.html + images/
+├── pages/              # mỗi thư mục: các file .pug/.html (mỗi file 1 email) + images/
 │   ├── welcome/
 │   └── flash-sale/
 └── layouts/ mixins/ partials/ config/ figma/ scripts/
@@ -47,7 +47,7 @@ landing/                # nguồn landing page — xem landing/README.md
 └── design/ scripts/
 dist/                   # ⬅ toàn bộ bản build
 ├── email/              #    mỗi email 1 thư mục
-│   ├── welcome/        #    index.html + images/
+│   ├── welcome/        #    index.html + images/ (giữ nguyên tên file gốc)
 │   └── flash-sale/
 └── landing/            #    index.html + css/ + images/
 ```
