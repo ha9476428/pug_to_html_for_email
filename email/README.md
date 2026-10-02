@@ -18,7 +18,7 @@ Bộ khung viết **email HTML bằng Pug**, build ra HTML **100% inline style**
 cd email
 npm install          # hoặc chạy 1 lần `npm install` ở thư mục gốc repo
 npm run dev          # http://localhost:3000 — build + watch + live reload
-npm run build        # build HTML gọn vào dist/ (dùng để gửi)
+npm run build        # build HTML gọn vào ../dist/email/ (dùng để gửi)
 npm run build:pretty # build HTML có thụt lề (4 space), dễ đọc
 ```
 
@@ -30,7 +30,7 @@ Hoặc từ thư mục gốc repo: `npm run dev:email`, `npm run build:email`, `
 email/
 ├── package.json
 ├── scripts/
-│   └── build.js         # emails/<tên>/index.pug|html -> juice (inline CSS) -> dist/<tên>/index.html
+│   └── build.js         # pages/<tên>/index.pug|html -> juice (inline CSS) -> ../dist/email/<tên>/index.html
 ├── config/
 │   ├── theme.js         # ⭐ biến dùng chung: màu, font, size, spacing, brand
 │   └── helpers.js       # h.font(), h.pad(), h.reset
@@ -44,7 +44,7 @@ email/
 ├── partials/
 │   ├── header.pug       # header mặc định (logo)
 │   └── footer.pug       # footer mặc định
-├── emails/              # ⭐ mỗi email = 1 thư mục riêng
+├── pages/               # ⭐ mỗi email = 1 thư mục riêng
 │   ├── _starter/        # mẫu Pug để copy (bắt đầu bằng "_" => không build)
 │   ├── _starter-html/   # mẫu HTML thuần để copy — xem mục bên dưới
 │   ├── welcome/
@@ -57,18 +57,23 @@ email/
 │   └── flash-sale/
 │       ├── index.html   # email viết thẳng bằng HTML
 │       └── images/
-├── figma/               # component catalog — xem mục riêng bên dưới
-│   ├── _README.md
-│   ├── _figma-buttons.pug ... _figma-typography.pug
-│   └── index.pug        # ⚠️ file TỰ SINH, đừng sửa tay
-└── dist/                # HTML đã build — mỗi email 1 thư mục, có commit vào git
-    ├── index.html       # trang liệt kê mọi email (khi npm run dev)
-    ├── welcome/
-    │   ├── index.html
-    │   └── images/      # copy từ emails/welcome/images/ (nếu có ảnh)
-    ├── order-confirmation/
-    ├── flash-sale/
-    └── figma/
+└── figma/               # component catalog — xem mục riêng bên dưới
+    ├── _README.md
+    ├── _figma-buttons.pug ... _figma-typography.pug
+    └── index.pug        # ⚠️ file TỰ SINH, đừng sửa tay
+```
+
+Bản build **không** nằm trong `email/` mà ở `dist/email/` (thư mục gốc repo):
+
+```
+dist/email/              # HTML đã build — mỗi email 1 thư mục, có commit vào git
+├── index.html           # trang liệt kê mọi email (khi npm run dev)
+├── welcome/
+│   ├── index.html
+│   └── images/          # copy từ email/pages/welcome/images/ (nếu có ảnh)
+├── order-confirmation/
+├── flash-sale/
+└── figma/
 ```
 
 ## Biến dùng chung — không khai báo lại
@@ -161,7 +166,7 @@ Cột hybrid (tự xếp chồng trên mobile, **không cần media query**):
 
 ## Component catalog (`figma/`)
 
-Nơi xem trước toàn bộ mixin/partial dùng chung — giống trang "component library" trong Figma, build ra `dist/figma/index.html`. Chi tiết đầy đủ ở [`figma/_README.md`](figma/_README.md), tóm tắt:
+Nơi xem trước toàn bộ mixin/partial dùng chung — giống trang "component library" trong Figma, build ra `dist/email/figma/index.html` (thư mục gốc repo). Chi tiết đầy đủ ở [`figma/_README.md`](figma/_README.md), tóm tắt:
 
 - Mỗi component 1 file `_figma-ten.pug` (chỉ nội dung, không tự build riêng).
 - `index.pug` **tự sinh** mỗi lần build: quét mọi `_figma-*.pug` trong thư mục, include hết theo thứ tự alphabet của tên file. Thêm component mới = chỉ cần tạo file `_figma-ten.pug`, không cần sửa `index.pug`.
@@ -180,21 +185,21 @@ Build tự cảnh báo (console) khi:
 
 ## Tạo email mới
 
-1. Copy cả thư mục `emails/_starter/` → `emails/ten-email/` (tên thư mục = tên email, không bắt đầu bằng `_`, không đặt là `figma`)
-2. Sửa `emails/ten-email/index.pug`
-3. (Tuỳ chọn) tạo `emails/ten-email/data.json` — các key trong JSON thành biến trong template
-4. (Tuỳ chọn) bỏ ảnh vào `emails/ten-email/images/`
-5. `npm run dev` và mở `http://localhost:3000` → build ra `dist/ten-email/index.html`
+1. Copy cả thư mục `pages/_starter/` → `pages/ten-email/` (tên thư mục = tên email, không bắt đầu bằng `_`, không đặt là `figma`)
+2. Sửa `pages/ten-email/index.pug`
+3. (Tuỳ chọn) tạo `pages/ten-email/data.json` — các key trong JSON thành biến trong template
+4. (Tuỳ chọn) bỏ ảnh vào `pages/ten-email/images/`
+5. `npm run dev` và mở `http://localhost:3000` → build ra `dist/email/ten-email/index.html`
 
 Email dùng `extends /layouts/layout-base` (đường dẫn tính từ `email/`) nên không phải sửa đường dẫn khi đổi tên/di chuyển thư mục.
 
 ### Viết thẳng bằng HTML (không dùng Pug)
 
-Không muốn học Pug? Copy cả thư mục `emails/_starter-html/` → `emails/ten-email/` và code HTML/CSS bình thường trong `index.html`. Build vẫn:
+Không muốn học Pug? Copy cả thư mục `pages/_starter-html/` → `pages/ten-email/` và code HTML/CSS bình thường trong `index.html`. Build vẫn:
 
 - **Inline hết CSS** trong thẻ `<style>` vào từng thẻ (juice) — xoá `<style>` khỏi `<head>`
 - Cảnh báo email > 102KB hoặc `<a>` đổi màu thiếu `!important`
-- Hiện trong `dist/index.html` và tự reload khi `npm run dev`
+- Hiện trong trang danh sách `http://localhost:3000` và tự reload khi `npm run dev`
 
 Đổi lại: không có `theme`/`h`, block/mixin, hay nạp `data.json` — mọi biến, style phải viết tay trong chính file `.html`. Mỗi thư mục email chỉ chứa 1 trong 2: `index.pug` **hoặc** `index.html` (có cả hai build sẽ báo lỗi).
 
@@ -202,7 +207,7 @@ Không muốn học Pug? Copy cả thư mục `emails/_starter-html/` → `email
 
 Email thật **luôn cần URL ảnh đã host public** — Gmail/Outlook/Apple Mail tải ảnh qua internet khi người nhận mở email, không đọc được file trên máy bạn hay `dist/`. Xem `theme.brand.logo` trong `config/theme.js` làm ví dụ (URL `placehold.co`).
 
-Muốn xem thử ảnh cục bộ khi đang code (trước khi có link host)? Mỗi email có thư mục `images/` riêng — đặt file vào `emails/<tên>/images/`, build tự copy vào `dist/<tên>/images/`, nên trong email chỉ cần path tương đối:
+Muốn xem thử ảnh cục bộ khi đang code (trước khi có link host)? Mỗi email có thư mục `images/` riêng — đặt file vào `pages/<tên>/images/`, build tự copy vào `dist/email/<tên>/images/`, nên trong email chỉ cần path tương đối:
 
 ```pug
 +image('images/banner.png', 'Banner khuyến mãi', 600)
@@ -220,6 +225,6 @@ Xem được qua `http://localhost:3000/<tên>/` khi chạy `npm run dev`.
 
 Nên test thực tế trên Litmus / Email on Acid / Testi@, hoặc gửi thử tới Gmail (web + app), Apple Mail, Outlook.com.
 
-## `dist/`
+## `dist/email/`
 
-Thư mục `email/dist/` (HTML đã build, inline CSS) có commit vào git — sau khi sửa email, nhớ `npm run build` rồi commit lại `dist/` cùng lúc để repo luôn có bản build mới nhất.
+Thư mục `dist/email/` ở thư mục gốc repo (HTML đã build, inline CSS) có commit vào git — sau khi sửa email, nhớ `npm run build` rồi commit lại `dist/email/` cùng lúc để repo luôn có bản build mới nhất. Mỗi lần build sẽ xoá rồi tạo lại `dist/email/` (không đụng tới `dist/landing/`).

@@ -5,7 +5,7 @@ cùng pipeline Pug -> inline CSS (juice) như email thật, nên những gì
 thấy ở đây đúng với sản phẩm cuối.
 
 - `npm run dev` -> mở `http://localhost:3000` -> link "figma/index".
-- Build ra 1 trang duy nhất: `dist/figma/index.html` — gộp toàn bộ
+- Build ra 1 trang duy nhất: `dist/email/figma/index.html` (thư mục gốc repo) — gộp toàn bộ
   component, giống trang "component library" trong Figma.
 
 "Component" ở đây không chỉ là mixin trong `email/mixins/` — partial dùng

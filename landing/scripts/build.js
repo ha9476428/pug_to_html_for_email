@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Build landing: copy nguyên trạng file trang (html, css/, images/, js/...) vào dist/ —
- * không qua Pug/juice, giữ nguyên @media. dist/ là bản sạch để deploy/upload,
+ * Build landing: copy nguyên trạng file trang (html, css/, images/, js/...) vào
+ * dist/landing/ ở thư mục gốc repo — không qua Pug/juice, giữ nguyên @media. Đây là bản sạch để deploy/upload,
  * không kèm tooling (scripts/, design/, package.json, README...).
  *
  *   npm run build
@@ -11,10 +11,10 @@ const path = require('node:path');
 
 // Thư mục gốc của project landing (landing/).
 const ROOT = path.resolve(__dirname, '..');
-const DIST = path.join(ROOT, 'dist');
+const DIST = path.join(ROOT, '..', 'dist', 'landing');
 
-// Không copy vào dist/: tooling, ảnh thiết kế để test, chính dist/.
-const EXCLUDE = new Set(['dist', 'node_modules', 'scripts', 'design', 'package.json', 'README.md', '.DS_Store']);
+// Không copy vào dist/landing/: tooling, ảnh thiết kế để test.
+const EXCLUDE = new Set(['node_modules', 'scripts', 'design', 'package.json', 'README.md', '.DS_Store']);
 
 function build() {
     const t0 = Date.now();

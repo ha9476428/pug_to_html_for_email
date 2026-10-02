@@ -16,8 +16,8 @@ const http = require('node:http');
 // Thư mục gốc của project landing (landing/).
 const ROOT = path.resolve(__dirname, '..');
 const PORT = Number(process.env.PORT) || 3001;
-// Không phục vụ / không theo dõi các thư mục này (tooling, bản build, ảnh output của test:pixel).
-const IGNORE_DIRS = new Set(['node_modules', 'scripts', 'dist', path.join('design', 'output')]);
+// Không phục vụ / không theo dõi các thư mục này (tooling, ảnh output của test:pixel).
+const IGNORE_DIRS = new Set(['node_modules', 'scripts', path.join('design', 'output')]);
 
 const MIME_TYPES = {
     '.html': 'text/html; charset=utf-8',

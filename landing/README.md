@@ -1,6 +1,6 @@
 # landing/
 
-Landing page viết tay bằng **HTML/CSS/JS thuần** — không qua Pug, không qua juice, nên `@media`, CSS trong `css/`, ảnh trong `images/` giữ nguyên trạng. Khi dev thì chạy thẳng file nguồn; `npm run build` copy các file trang ra `dist/` để deploy.
+Landing page viết tay bằng **HTML/CSS/JS thuần** — không qua Pug, không qua juice, nên `@media`, CSS trong `css/`, ảnh trong `images/` giữ nguyên trạng. Khi dev thì chạy thẳng file nguồn; `npm run build` copy các file trang ra `dist/landing/` (thư mục gốc repo) để deploy.
 
 > Email (Pug → HTML inline CSS) nằm ở project riêng [`../email/`](../email/README.md). Pipeline email **xoá sạch `@media`** khi build (email client không hỗ trợ media query đáng tin cậy), nên landing cần responsive thật phải tách hẳn ra đây.
 
@@ -10,7 +10,7 @@ Landing page viết tay bằng **HTML/CSS/JS thuần** — không qua Pug, khôn
 cd landing
 npm install          # hoặc chạy 1 lần `npm install` ở thư mục gốc repo
 npm run dev          # http://localhost:3001 — tự reload khi sửa file
-npm run build        # copy trang ra dist/ để deploy
+npm run build        # copy trang ra ../dist/landing/ để deploy
 npm run test:pixel   # so trang với ảnh thiết kế (xem bên dưới)
 ```
 
@@ -33,16 +33,15 @@ landing/
 │   └── README.md
 ├── scripts/
 │   ├── dev.js            # npm run dev — static server + live reload
-│   ├── build.js          # npm run build — copy trang ra dist/
+│   ├── build.js          # npm run build — copy trang ra ../dist/landing/
 │   └── pixel-test.js     # npm run test:pixel — so trang với ảnh thiết kế
-└── dist/                 # bản build để deploy — có commit vào git
 ```
 
-## `dist/`
+## `dist/landing/`
 
-`npm run build` xoá rồi tạo lại `dist/`, copy mọi file/thư mục của trang (`*.html`, `css/`, `images/`, `js/`...) — **trừ** tooling: `scripts/`, `design/`, `package.json`, `README.md`. Thêm thư mục mới (vd `js/`, `fonts/`) là tự được copy, không cần sửa script.
+Bản build nằm ở `dist/landing/` (thư mục gốc repo), không nằm trong `landing/`. `npm run build` xoá rồi tạo lại `dist/landing/`, copy mọi file/thư mục của trang (`*.html`, `css/`, `images/`, `js/`...) — **trừ** tooling: `scripts/`, `design/`, `package.json`, `README.md`. Thêm thư mục mới (vd `js/`, `fonts/`) là tự được copy, không cần sửa script.
 
-`dist/` có commit vào git — sau khi sửa landing, nhớ `npm run build` rồi commit lại `dist/` cùng lúc.
+`dist/landing/` có commit vào git — sau khi sửa landing, nhớ `npm run build` rồi commit lại `dist/landing/` cùng lúc.
 
 ## Test pixel-perfect
 
