@@ -2,12 +2,13 @@
 /**
  * Build email: Pug -> HTML -> inline CSS (juice) -> ../dist/email/
  *
- * Mỗi email là 1 thư mục trong pages/ (bắt đầu bằng "_" => không build):
- *   pages/<tên>/index.pug | index.html   nguồn email (chọn 1 trong 2; hoặc 1 file .pug/.html tên bất kỳ)
- *   pages/<tên>/data.json                 dữ liệu mẫu (tuỳ chọn, chỉ cho .pug)
- *   pages/<tên>/images/                   ảnh xem thử local (tuỳ chọn)
- * Build ra thư mục riêng cho từng email:
- *   dist/email/<tên>/index.html + dist/email/<tên>/images/
+ * Mỗi thư mục trong pages/ (bắt đầu bằng "_" => không build) chứa 1 hoặc nhiều email:
+ *   pages/<thư-mục>/<file>.pug | <file>.html   mỗi file = 1 email (file bắt đầu bằng "_" = partial, không build)
+ *   pages/<thư-mục>/<file>.json                dữ liệu mẫu riêng cho <file>.pug (tuỳ chọn)
+ *   pages/<thư-mục>/data.json                  dữ liệu mẫu dùng chung cho mọi .pug trong thư mục (tuỳ chọn)
+ *   pages/<thư-mục>/images/                    ảnh xem thử local (tuỳ chọn), dùng chung trong thư mục
+ * Build ra cùng thư mục, GIỮ NGUYÊN TÊN FILE:
+ *   pages/demo/demo2.pug  ->  dist/email/demo/demo2.html  (+ dist/email/demo/images/)
  *
  *   npm run build          build 1 lần (HTML gọn, sẵn sàng gửi)
  *   npm run build:pretty   build HTML dễ đọc
@@ -230,46 +231,61 @@ function buildHtml(file, outName) {
 }
 
 /**
- * Tìm file nguồn của 1 email trong pages/<name>/:
- *   - ưu tiên index.pug / index.html
- *   - nếu không có, dùng file .pug/.html DUY NHẤT trong thư mục (tên gì cũng được,
- *     vd quater-3.pug) — file bắt đầu bằng "_" không tính (partial)
- * Trả về null nếu thư mục chưa có file nguồn nào.
+ * Liệt kê file nguồn email trong pages/<name>/ — mọi .pug/.html nằm trực tiếp trong
+ * thư mục (không tính file bắt đầu bằng "_": partial dùng để include).
  */
-function findEmailSource(dir) {
-    const index = ['index.pug', 'index.html'].filter((f) => fs.existsSync(path.join(dir, f)));
-    if (index.length > 1) throw new Error('Có cả index.pug lẫn index.html — chỉ giữ 1 file.');
-    if (index.length === 1) return path.join(dir, index[0]);
-
-    const sources = fs
+function listEmailSources(dir) {
+    return fs
         .readdirSync(dir, { withFileTypes: true })
         .filter((f) => f.isFile() && /\.(pug|html)$/.test(f.name) && !f.name.startsWith('_'))
-        .map((f) => f.name);
-    if (sources.length > 1) {
-        throw new Error(`Có nhiều file nguồn (${sources.join(', ')}) — đổi tên file chính thành index.pug hoặc index.html.`);
-    }
-    return sources.length ? path.join(dir, sources[0]) : null;
+        .map((f) => f.name)
+        .sort();
 }
 
 /**
- * Build 1 email từ thư mục pages/<name>/ ra dist/email/<name>/index.html.
- * Trả về false nếu thư mục chưa có file nguồn (bỏ qua, không tính là lỗi).
+ * Build mọi email trong thư mục pages/<name>/ ra dist/email/<name>/, giữ nguyên tên file:
+ * pages/<name>/demo2.pug -> dist/email/<name>/demo2.html.
+ * Lỗi của từng file được in ra và đếm riêng, không chặn các file khác trong thư mục.
+ *
+ * @returns {{ built: string[], failed: number }}  built = outName đã build, vd ["demo/demo2"]
  */
-function buildEmail(name, locals) {
+function buildEmailFolder(name, locals) {
     if (RESERVED_NAMES.has(name)) throw new Error(`Tên "${name}" đã dành cho dist/email/${name}/ — đổi tên thư mục email khác.`);
     const dir = path.join(PAGES, name);
-    const source = findEmailSource(dir);
-    if (!source) {
+    const sources = listEmailSources(dir);
+    if (!sources.length) {
         console.log(`  – bỏ qua pages/${name}/ (chưa có file .pug hoặc .html)`);
-        return false;
+        return { built: [], failed: 0 };
     }
 
-    const outName = `${name}/index`;
-    if (source.endsWith('.pug')) buildPug(source, locals, loadData(path.join(dir, 'data.json')), outName);
-    else buildHtml(source, outName);
+    const built = [];
+    let failed = 0;
+    const seen = new Map(); // tên không đuôi -> file đã gặp, để bắt trùng demo2.pug + demo2.html
+    for (const file of sources) {
+        const base = file.replace(/\.(pug|html)$/, '');
+        const outName = `${name}/${base}`;
+        try {
+            if (seen.has(base)) {
+                throw new Error(`Trùng tên với ${seen.get(base)} — cả 2 đều build ra ${base}.html, đổi tên 1 file.`);
+            }
+            seen.set(base, file);
+            const source = path.join(dir, file);
+            if (file.endsWith('.pug')) {
+                const ownData = path.join(dir, `${base}.json`);
+                const data = loadData(fs.existsSync(ownData) ? ownData : path.join(dir, 'data.json'));
+                buildPug(source, locals, data, outName);
+            } else {
+                buildHtml(source, outName);
+            }
+            built.push(outName);
+        } catch (err) {
+            failed++;
+            console.error(`  ✗ pages/${name}/${file}\n${err.message}\n`);
+        }
+    }
 
-    if (copyEmailImages(name)) console.log(`      ảnh: pages/${name}/images/ -> dist/email/${name}/images/`);
-    return true;
+    if (built.length && copyEmailImages(name)) console.log(`      ảnh: pages/${name}/images/ -> dist/email/${name}/images/`);
+    return { built, failed };
 }
 
 /**
@@ -292,7 +308,7 @@ function copyEmailImages(name) {
 }
 
 function writeIndex(emailNames, figmaNames) {
-    const list = (names) => `<ul>${names.map((n) => `<li><a href="${n}/index.html">${n}</a></li>`).join('')}</ul>`;
+    const list = (names) => `<ul>${names.map((n) => `<li><a href="${n}.html">${n}.html</a></li>`).join('')}</ul>`;
     // Figma: chỉ link tới trang tổng hợp figma/index.html, không liệt kê từng component riêng.
     const figmaSection = figmaNames.includes('figma/index')
         ? '<ul><li><a href="figma/index.html">figma/index</a></li></ul>'
@@ -363,7 +379,9 @@ function buildAll() {
     console.log('\nBuilding emails...');
     for (const name of listEmailDirs()) {
         try {
-            if (buildEmail(name, locals)) emailNames.push(name);
+            const result = buildEmailFolder(name, locals);
+            emailNames.push(...result.built);
+            failed += result.failed;
         } catch (err) {
             failed++;
             console.error(`  ✗ pages/${name}/\n${err.message}\n`);

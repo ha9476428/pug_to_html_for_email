@@ -30,7 +30,7 @@ Hoặc từ thư mục gốc repo: `npm run dev:email`, `npm run build:email`, `
 email/
 ├── package.json
 ├── scripts/
-│   └── build.js         # pages/<tên>/index.pug|html -> juice (inline CSS) -> ../dist/email/<tên>/index.html
+│   └── build.js         # pages/<thư-mục>/<file>.pug|html -> juice (inline CSS) -> ../dist/email/<thư-mục>/<file>.html
 ├── config/
 │   ├── theme.js         # ⭐ biến dùng chung: màu, font, size, spacing, brand
 │   └── helpers.js       # h.font(), h.pad(), h.reset
@@ -48,7 +48,7 @@ email/
 │   ├── _starter/        # mẫu Pug để copy (bắt đầu bằng "_" => không build)
 │   ├── _starter-html/   # mẫu HTML thuần để copy — xem mục bên dưới
 │   ├── welcome/
-│   │   ├── index.pug    # nguồn email (index.pug HOẶC index.html)
+│   │   ├── index.pug    # mỗi file .pug/.html = 1 email, build ra cùng tên (index.pug -> index.html)
 │   │   └── images/      # ảnh XEM THỬ LOCAL của email này (không dùng khi gửi thật)
 │   ├── order-confirmation/
 │   │   ├── index.pug
@@ -186,10 +186,25 @@ Build tự cảnh báo (console) khi:
 ## Tạo email mới
 
 1. Copy cả thư mục `pages/_starter/` → `pages/ten-email/` (tên thư mục = tên email, không bắt đầu bằng `_`, không đặt là `figma`; nên dùng `-` thay dấu cách, vd `quater-3`)
-2. Sửa `pages/ten-email/index.pug` (đặt tên khác cũng được, vd `quater-3.pug`, miễn trong thư mục chỉ có **1** file `.pug`/`.html` — build luôn ra `index.html`)
-3. (Tuỳ chọn) tạo `pages/ten-email/data.json` — các key trong JSON thành biến trong template
+2. Sửa `pages/ten-email/index.pug` — đổi tên file thoải mái: **build giữ nguyên tên file**, vd `pages/ten-email/demo2.pug` → `dist/email/ten-email/demo2.html`
+3. (Tuỳ chọn) tạo dữ liệu mẫu — các key trong JSON thành biến trong template:
+   - `pages/ten-email/demo2.json`: chỉ cho `demo2.pug`
+   - `pages/ten-email/data.json`: dùng chung cho mọi `.pug` trong thư mục (khi file đó không có `.json` riêng)
 4. (Tuỳ chọn) bỏ ảnh vào `pages/ten-email/images/`
-5. `npm run dev` và mở `http://localhost:3000` → build ra `dist/email/ten-email/index.html`
+5. `npm run dev` và mở `http://localhost:3000` → build ra `dist/email/ten-email/<tên-file>.html`
+
+**Nhiều email trong 1 thư mục:** mỗi file `.pug`/`.html` trong thư mục là 1 email riêng, dùng chung `images/`:
+
+```
+pages/quater-3/                  dist/email/quater-3/
+├── demo1.pug          ->        ├── demo1.html
+├── demo2.pug          ->        ├── demo2.html
+├── khuyen-mai.html    ->        ├── khuyen-mai.html
+├── _block-chung.pug   (bỏ qua — file bắt đầu bằng "_" là partial để include)
+└── images/            ->        └── images/
+```
+
+Không được có 2 file trùng tên khác đuôi (vd `demo2.pug` + `demo2.html`) vì cả hai đều ra `demo2.html` — build sẽ báo lỗi.
 
 Email dùng `extends /layouts/layout-base` (đường dẫn tính từ `email/`) nên không phải sửa đường dẫn khi đổi tên/di chuyển thư mục.
 
@@ -201,7 +216,7 @@ Không muốn học Pug? Copy cả thư mục `pages/_starter-html/` → `pages/
 - Cảnh báo email > 102KB hoặc `<a>` đổi màu thiếu `!important`
 - Hiện trong trang danh sách `http://localhost:3000` và tự reload khi `npm run dev`
 
-Đổi lại: không có `theme`/`h`, block/mixin, hay nạp `data.json` — mọi biến, style phải viết tay trong chính file `.html`. Mỗi thư mục email chỉ chứa **1** file nguồn `.pug` hoặc `.html` (nên đặt tên `index`). Có nhiều file thì build ưu tiên `index.pug`/`index.html`; không có `index` mà lại có nhiều file thì báo lỗi. Thư mục chưa có file nguồn nào thì tạm bỏ qua.
+Đổi lại: không có `theme`/`h`, block/mixin, hay nạp `data.json` — mọi biến, style phải viết tay trong chính file `.html`. File `.pug` và `.html` để chung 1 thư mục được, mỗi file build ra 1 file `.html` cùng tên. Thư mục chưa có file nguồn nào thì tạm bỏ qua.
 
 ### Ảnh trong email
 
