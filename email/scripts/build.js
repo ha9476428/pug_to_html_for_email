@@ -33,6 +33,9 @@ const CONFIG = path.join(SRC, 'config');
 const WATCH_DIRS = ['config', 'pages', 'figma', 'layouts', 'mixins', 'partials'].map((d) => path.join(SRC, d));
 // Tên thư mục trong dist/email/ đã dành cho component catalog — email không được đặt tên trùng.
 const RESERVED_NAMES = new Set(['figma']);
+// Thư mục gốc repo — mọi đường dẫn in ra terminal tính từ đây (vd email/pages/x/a.html:12),
+// để bấm vào được trong VS Code/terminal khi mở cả repo.
+const REPO = path.resolve(ROOT, '..');
 
 const args = new Set(process.argv.slice(2));
 const WATCH = args.has('--watch');
@@ -138,6 +141,43 @@ function formatRegionComments(html) {
     return out.join('\n');
 }
 
+/** "email/pages/x/a.html:12:5" — đường dẫn tính từ gốc repo, kèm dòng/cột nếu có. */
+function loc(file, line, col) {
+    return `${path.relative(REPO, file)}${line ? `:${line}` : ''}${line && col ? `:${col}` : ''}`;
+}
+
+/** Số dòng (bắt đầu từ 1) của vị trí `offset` trong chuỗi. */
+function lineAt(text, offset) {
+    return text.slice(0, offset).split('\n').length;
+}
+
+/** Đổi đường dẫn tuyệt đối trong thông báo lỗi (vd của Pug) thành đường dẫn tính từ gốc repo. */
+function relPaths(message) {
+    return String(message).split(REPO + path.sep).join('');
+}
+
+/**
+ * Tìm thẻ <a> bị cảnh báo nằm ở file nguồn nào, dòng nào — dò theo giá trị href
+ * trong mọi file đã dùng để build email đó (file chính + file include/extends/mixin).
+ * Trả về [] nếu không xác định được (vd thẻ không có href, href sinh từ biến).
+ */
+function locateAnchor(tag, sources) {
+    const href = tag.match(/\shref\s*=\s*"([^"]*)"/i)?.[1]?.replace(/&amp;/g, '&');
+    if (!href) return [];
+    const hits = [];
+    for (const file of sources) {
+        if (!fs.existsSync(file)) continue;
+        fs.readFileSync(file, 'utf8')
+            .split('\n')
+            .forEach((text, i) => {
+                if (text.includes(href)) hits.push({ file, line: i + 1, text });
+            });
+    }
+    // href dùng ở nhiều chỗ: ưu tiên dòng có set màu (chỗ gây ra cảnh báo).
+    const withColor = hits.filter((h) => /color/i.test(h.text));
+    return (withColor.length ? withColor : hits).map((h) => loc(h.file, h.line));
+}
+
 /**
  * Cảnh báo thẻ <a> có set `color` inline nhưng thiếu `!important`.
  * Gmail app (Android/iOS) và nhiều client khác tự ép màu link mặc định
@@ -172,6 +212,7 @@ function findAnchorColorWarnings(html) {
  * @param rendered  chuỗi HTML đầu vào (chưa inline CSS)
  * @param outName   tên dùng để ghi ra dist/ + hiện trong index, vd "welcome" hoặc "figma/buttons"
  * @param format    false = giữ nguyên xuống dòng/thụt lề của nguồn (email viết bằng HTML), không chạy beautify
+ * @param sources   mọi file nguồn đã dùng (file chính + include) — để cảnh báo trỏ đúng file:dòng
  */
 /** true nếu đa số khai báo trong style="" của nguồn viết liền, không có dấu cách sau ":". */
 function prefersCompactStyle(html) {
@@ -207,7 +248,7 @@ const SELF_CLOSING_RE = new RegExp(`<(?:${[...VOID_TAGS].join('|')})\\b[^>]*\\s/
 // Thẻ rỗng chưa có "/>" ở cuối (juice xuất ra dạng này).
 const VOID_TAG_RE = new RegExp(`<(${[...VOID_TAGS].join('|')})\\b((?:[^>"']|"[^"]*"|'[^']*')*?)\\s*(?<!/)>`, 'gi');
 
-function processHtml(rendered, outName, { format = true } = {}) {
+function processHtml(rendered, outName, { format = true, sources = [] } = {}) {
     let html = juice(rendered, {
         removeStyleTags: true, // xoá toàn bộ <style> sau khi inline — không style nào sót lại trong <head>
         preserveMediaQueries: false,
@@ -244,7 +285,11 @@ function processHtml(rendered, outName, { format = true } = {}) {
     const anchorWarnings = findAnchorColorWarnings(html);
     if (anchorWarnings.length) {
         console.log(`  ⚠️  ${anchorWarnings.length} thẻ <a> đổi color thiếu !important (Gmail app/… có thể ghi đè màu):`);
-        for (const w of anchorWarnings) console.log(`      ${w}`);
+        for (const w of anchorWarnings) {
+            const where = locateAnchor(w, sources);
+            console.log(`      ${where.length ? where.join(', ') : '(không xác định được dòng — tìm theo đoạn HTML bên dưới)'}`);
+            console.log(`          ${w}`);
+        }
     }
 
     return outName;
@@ -256,14 +301,14 @@ function processHtml(rendered, outName, { format = true } = {}) {
  * @param outName tên dùng để ghi ra dist/, vd "welcome/index" hoặc "figma/index"
  */
 function buildPug(file, locals, data, outName) {
-    const rendered = pug.renderFile(file, {
+    const template = pug.compileFile(file, {
         basedir: SRC, // cho phép extends/include /layouts/..., /mixins/... (đường dẫn tuyệt đối từ email/)
-        ...locals,
-        ...data,
         cache: false,
     });
+    const rendered = template({ ...locals, ...data });
 
-    return processHtml(rendered, outName);
+    // template.dependencies = mọi file extends/include (layout, mixin, partial) — để cảnh báo trỏ đúng file.
+    return processHtml(rendered, outName, { sources: [file, ...template.dependencies] });
 }
 
 /**
@@ -298,17 +343,17 @@ function renderPugPartial(file, ctx) {
     if (addedLines) source = `include /mixins/index\n${source}`;
     let html;
     try {
-        html = pug.render(source, {
+        const template = pug.compile(source, {
             filename: file, // để include/extends tương đối và báo lỗi đúng tên file
             basedir: SRC,
-            ...ctx.locals,
-            ...ctx.data,
             cache: false,
         });
+        for (const dep of template.dependencies) ctx.files.add(dep);
+        html = template({ ...ctx.locals, ...ctx.data });
     } catch (err) {
         // Lỗi trong chính file này: trừ dòng include mixin đã chèn thêm để số dòng khớp file thật.
         if (err.filename === file && typeof err.line === 'number') {
-            throw new Error(`${path.relative(SRC, file)}:${err.line - addedLines}${err.column ? `:${err.column}` : ''}\n${err.msg}`);
+            throw new Error(`${loc(file, err.line - addedLines, err.column)}\n${err.msg}`);
         }
         throw err;
     }
@@ -316,21 +361,28 @@ function renderPugPartial(file, ctx) {
 }
 
 function resolveHtmlIncludes(file, ctx, stack = []) {
-    const rel = (f) => path.relative(SRC, f);
     if (stack.includes(file)) {
-        throw new Error(`Include vòng lặp: ${[...stack, file].map(rel).join(' -> ')}`);
+        throw new Error(`Include vòng lặp: ${[...stack, file].map((f) => loc(f)).join(' -> ')}`);
     }
+    ctx.files.add(file);
 
     // fromRoot = true: đường dẫn tính từ email/; false: tương đối với file đang viết.
     // Nội dung ghép vào được thụt lề theo đúng vị trí dòng include, để bản build trông như viết tay.
     const include = (target, fromRoot, offset, source) => {
         const included = fromRoot ? path.join(SRC, target) : path.resolve(path.dirname(file), target);
         if (!fs.existsSync(included)) {
-            throw new Error(`Không tìm thấy file include "${target}" (trong ${rel(file)}) — đã tìm ở ${rel(included)}`);
+            throw new Error(`${loc(file, lineAt(source, offset))}\nKhông tìm thấy file include "${target}" — đã tìm ở ${loc(included)}`);
         }
-        const content = (
-            included.endsWith('.pug') ? renderPugPartial(included, ctx) : resolveHtmlIncludes(included, ctx, [...stack, file])
-        ).replace(/\s+$/, '');
+        if (included.endsWith('.pug')) ctx.files.add(included);
+        let content;
+        try {
+            content = included.endsWith('.pug') ? renderPugPartial(included, ctx) : resolveHtmlIncludes(included, ctx, [...stack, file]);
+        } catch (err) {
+            // Lỗi bên trong file được include: ghi thêm nó được include từ dòng nào, để lần ngược lại.
+            if (!err.message.startsWith('Include vòng lặp')) err.message += `\n    ↳ được include từ ${loc(file, lineAt(source, offset))}`;
+            throw err;
+        }
+        content = content.replace(/\s+$/, '');
         const lineStart = source.lastIndexOf('\n', offset - 1) + 1;
         const before = source.slice(lineStart, offset);
         const indent = /^[ \t]*$/.test(before) ? before : '';
@@ -348,7 +400,9 @@ function resolveHtmlIncludes(file, ctx, stack = []) {
  * inline CSS (juice) + cảnh báo dung lượng/màu link như email viết bằng Pug.
  */
 function buildHtml(file, locals, data, outName) {
-    return processHtml(resolveHtmlIncludes(file, { locals, data }), outName, { format: false });
+    const ctx = { locals, data, files: new Set() };
+    const html = resolveHtmlIncludes(file, ctx);
+    return processHtml(html, outName, { format: false, sources: [...ctx.files] });
 }
 
 /**
@@ -398,7 +452,7 @@ function buildEmailFolder(name, locals) {
             built.push(outName);
         } catch (err) {
             failed++;
-            console.error(`  ✗ pages/${name}/${file}\n${err.message}\n`);
+            console.error(`  ✗ ${loc(path.join(dir, file))}\n${relPaths(err.message)}\n`);
         }
     }
 
@@ -502,7 +556,7 @@ function buildAll() {
             failed += result.failed;
         } catch (err) {
             failed++;
-            console.error(`  ✗ pages/${name}/\n${err.message}\n`);
+            console.error(`  ✗ ${loc(path.join(PAGES, name))}/\n${relPaths(err.message)}\n`);
         }
     }
 
@@ -515,7 +569,7 @@ function buildAll() {
                 figmaNames.push(buildPug(path.join(FIGMA, rel), locals, {}, `figma/${rel.replace(/\.pug$/, '')}`));
             } catch (err) {
                 failed++;
-                console.error(`  ✗ ${rel}\n${err.message}\n`);
+                console.error(`  ✗ ${loc(path.join(FIGMA, rel))}\n${relPaths(err.message)}\n`);
             }
         }
     }
