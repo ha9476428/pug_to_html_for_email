@@ -279,11 +279,43 @@ function buildPug(file, locals, data, outName) {
  *
  * File được include cũng có thể include tiếp file khác. Đặt tên file nhỏ bắt đầu
  * bằng "_" (vd _header.html) để nó không bị build thành 1 email riêng.
+ *
+ * Include file .pug (vd <!--#include file="_banner.pug" -->): file được render ra HTML
+ * trước khi ghép — xem renderPugPartial().
  */
 const SSI_INCLUDE_RE = /<!--#include\s+(file|virtual)\s*=\s*(["'])(.*?)\2\s*-->/g;
 const AT_INCLUDE_RE = /<!--\s*@include\s+(["']?)([^"'\s]+)\1\s*-->/g;
 
-function resolveHtmlIncludes(file, stack = []) {
+/**
+ * Render 1 file .pug nhỏ được include vào email HTML: có sẵn `theme`, `h`, dữ liệu
+ * data.json của thư mục và toàn bộ mixin (+button, +text...) — không cần tự include
+ * /mixins/index. Kết quả được format xuống dòng/thụt lề cho dễ đọc.
+ */
+function renderPugPartial(file, ctx) {
+    let source = fs.readFileSync(file, 'utf8');
+    // Tự nạp mixin, trừ khi file dùng `extends` (extends bắt buộc phải là dòng đầu tiên).
+    const addedLines = /^\s*extends\s/m.test(source) ? 0 : 1;
+    if (addedLines) source = `include /mixins/index\n${source}`;
+    let html;
+    try {
+        html = pug.render(source, {
+            filename: file, // để include/extends tương đối và báo lỗi đúng tên file
+            basedir: SRC,
+            ...ctx.locals,
+            ...ctx.data,
+            cache: false,
+        });
+    } catch (err) {
+        // Lỗi trong chính file này: trừ dòng include mixin đã chèn thêm để số dòng khớp file thật.
+        if (err.filename === file && typeof err.line === 'number') {
+            throw new Error(`${path.relative(SRC, file)}:${err.line - addedLines}${err.column ? `:${err.column}` : ''}\n${err.msg}`);
+        }
+        throw err;
+    }
+    return beautify(html).trim();
+}
+
+function resolveHtmlIncludes(file, ctx, stack = []) {
     const rel = (f) => path.relative(SRC, f);
     if (stack.includes(file)) {
         throw new Error(`Include vòng lặp: ${[...stack, file].map(rel).join(' -> ')}`);
@@ -296,7 +328,9 @@ function resolveHtmlIncludes(file, stack = []) {
         if (!fs.existsSync(included)) {
             throw new Error(`Không tìm thấy file include "${target}" (trong ${rel(file)}) — đã tìm ở ${rel(included)}`);
         }
-        const content = resolveHtmlIncludes(included, [...stack, file]).replace(/\s+$/, '');
+        const content = (
+            included.endsWith('.pug') ? renderPugPartial(included, ctx) : resolveHtmlIncludes(included, ctx, [...stack, file])
+        ).replace(/\s+$/, '');
         const lineStart = source.lastIndexOf('\n', offset - 1) + 1;
         const before = source.slice(lineStart, offset);
         const indent = /^[ \t]*$/.test(before) ? before : '';
@@ -313,8 +347,8 @@ function resolveHtmlIncludes(file, stack = []) {
  * Email viết thẳng bằng HTML (không qua Pug) — ghép các file include, rồi vẫn được
  * inline CSS (juice) + cảnh báo dung lượng/màu link như email viết bằng Pug.
  */
-function buildHtml(file, outName) {
-    return processHtml(resolveHtmlIncludes(file), outName, { format: false });
+function buildHtml(file, locals, data, outName) {
+    return processHtml(resolveHtmlIncludes(file, { locals, data }), outName, { format: false });
 }
 
 /**
@@ -357,13 +391,10 @@ function buildEmailFolder(name, locals) {
             }
             seen.set(base, file);
             const source = path.join(dir, file);
-            if (file.endsWith('.pug')) {
-                const ownData = path.join(dir, `${base}.json`);
-                const data = loadData(fs.existsSync(ownData) ? ownData : path.join(dir, 'data.json'));
-                buildPug(source, locals, data, outName);
-            } else {
-                buildHtml(source, outName);
-            }
+            const ownData = path.join(dir, `${base}.json`);
+            const data = loadData(fs.existsSync(ownData) ? ownData : path.join(dir, 'data.json'));
+            if (file.endsWith('.pug')) buildPug(source, locals, data, outName);
+            else buildHtml(source, locals, data, outName); // data dùng cho file .pug được #include vào
             built.push(outName);
         } catch (err) {
             failed++;
