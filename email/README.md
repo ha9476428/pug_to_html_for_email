@@ -247,6 +247,25 @@ Email HTML có thể tách thành nhiều file nhỏ (header, footer, banner...)
 
 > Chỉ hỗ trợ phần `include` của SSI. Các lệnh SSI khác (`#echo`, `#if`, `#set`...) không được xử lý.
 
+**Include file `.pug`** — file nhỏ viết bằng Pug cũng ghép được vào email HTML. Build sẽ render nó ra HTML trước khi ghép:
+
+```html
+<!--#include file="_banner.pug" -->
+```
+
+```pug
+//- pages/quater-3/_banner.pug
+tr
+    td(style=h.font({ size: 'sm', color: theme.color.primary }))
+        | Xin chào #{name}
+        +button('Mua ngay', 'https://example.com')
+```
+
+- Có sẵn `theme`, `h` (từ `config/`) và **toàn bộ mixin** (`+button`, `+text`, `+image`...) — không cần tự `include /mixins/index`.
+- Biến lấy từ `<tên-email>.json` hoặc `data.json` trong cùng thư mục (vd `#{name}` ở trên).
+- Phần HTML render từ Pug được format xuống dòng/thụt lề theo vị trí dòng include; phần HTML bạn tự viết vẫn giữ nguyên.
+- Trong file `.pug` muốn ghép tiếp file khác thì dùng `include` của Pug (không dùng `#include`).
+
 ```
 pages/quater-3/
 ├── demo1.html          # <!--#include file="_header.html" --> ... <!--#include file="_footer.html" -->
