@@ -215,6 +215,7 @@ Không muốn học Pug? Copy cả thư mục `pages/_starter-html/` → `pages/
 - **Inline hết CSS** trong thẻ `<style>` vào từng thẻ (juice) — xoá `<style>` khỏi `<head>`
 - Cảnh báo email > 102KB hoặc `<a>` đổi màu thiếu `!important`
 - Hiện trong trang danh sách `http://localhost:3000` và tự reload khi `npm run dev`
+- **Giữ nguyên format của file gốc**: xuống dòng, thụt lề, `<img ... />` viết sao thì bản build giữ vậy (không bị format lại, kể cả khi `npm run dev` / `build:pretty`). Chỉ khác ở chỗ `<style>` bị xoá và CSS của nó được thêm vào `style=""` của thẻ tương ứng. Phần ghép từ `#include` được thụt lề theo đúng vị trí dòng include.
 
 Đổi lại: không có `theme`/`h`, block/mixin, hay nạp `data.json` — mọi biến, style phải viết tay trong chính file `.html`. File `.pug` và `.html` để chung 1 thư mục được, mỗi file build ra 1 file `.html` cùng tên. Thư mục chưa có file nguồn nào thì tạm bỏ qua.
 

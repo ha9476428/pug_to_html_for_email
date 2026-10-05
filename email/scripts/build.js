@@ -165,14 +165,49 @@ function findAnchorColorWarnings(html) {
 }
 
 /**
- * Inline CSS (juice), format (nếu --pretty), ghi ra dist/, in cảnh báo.
+ * Inline CSS (juice), format (nếu --pretty và format !== false), ghi ra dist/, in cảnh báo.
  * Dùng chung cho cả email viết bằng Pug (đã render ra HTML) lẫn email viết
  * thẳng bằng HTML (đọc nguyên file).
  *
  * @param rendered  chuỗi HTML đầu vào (chưa inline CSS)
  * @param outName   tên dùng để ghi ra dist/ + hiện trong index, vd "welcome" hoặc "figma/buttons"
+ * @param format    false = giữ nguyên xuống dòng/thụt lề của nguồn (email viết bằng HTML), không chạy beautify
  */
-function processHtml(rendered, outName) {
+/** true nếu đa số khai báo trong style="" của nguồn viết liền, không có dấu cách sau ":". */
+function prefersCompactStyle(html) {
+    let compact = 0;
+    let spaced = 0;
+    for (const [, css] of html.matchAll(/\sstyle="([^"]*)"/g)) {
+        for (const decl of css.split(';')) {
+            const m = decl.match(/^\s*[\w-]+(\s*):(\s*)\S/);
+            if (!m) continue;
+            if (m[1] || m[2]) spaced++;
+            else compact++;
+        }
+    }
+    return compact > spaced;
+}
+
+/** "margin: 0 0 8px; font-size: 12px;" -> "margin:0 0 8px;font-size:12px;" (giữ nguyên khoảng trắng TRONG giá trị). */
+function compactStyle(css) {
+    if (/url\(/i.test(css)) return css; // url(data:...;base64,...) có ";" bên trong — để nguyên cho an toàn
+    const decls = css
+        .split(';')
+        .map((d) => d.trim())
+        .filter(Boolean)
+        .map((d) => {
+            const i = d.indexOf(':');
+            return i === -1 ? d : `${d.slice(0, i).trim()}:${d.slice(i + 1).trim()}`;
+        });
+    return decls.length ? `${decls.join(';')};` : '';
+}
+
+// Thẻ rỗng (void) viết kiểu "<img ... />" trong nguồn.
+const SELF_CLOSING_RE = new RegExp(`<(?:${[...VOID_TAGS].join('|')})\\b[^>]*\\s/>`, 'i');
+// Thẻ rỗng chưa có "/>" ở cuối (juice xuất ra dạng này).
+const VOID_TAG_RE = new RegExp(`<(${[...VOID_TAGS].join('|')})\\b((?:[^>"']|"[^"]*"|'[^']*')*?)\\s*(?<!/)>`, 'gi');
+
+function processHtml(rendered, outName, { format = true } = {}) {
     let html = juice(rendered, {
         removeStyleTags: true, // xoá toàn bộ <style> sau khi inline — không style nào sót lại trong <head>
         preserveMediaQueries: false,
@@ -184,9 +219,18 @@ function processHtml(rendered, outName) {
         insertPreservedExtraCss: false,
     });
 
-    if (PRETTY) {
+    if (PRETTY && format) {
         html = beautify(html);
         html = formatRegionComments(html);
+    } else if (!format) {
+        // juice xoá <style> nhưng để lại dòng chỉ còn dấu cách/tab — dọn các dòng đó,
+        // giữ nguyên dòng trống thật (không có ký tự nào) mà bạn tự viết trong nguồn.
+        html = html.replace(/\n[ \t]+(?=\n)/g, '');
+        // juice đổi <img ... /> thành <img ...> — nếu nguồn viết thẻ rỗng kiểu " />" thì trả lại như cũ.
+        if (SELF_CLOSING_RE.test(rendered)) html = html.replace(VOID_TAG_RE, (_m, tag, attrs) => `<${tag}${attrs} />`);
+        // juice viết lại style của thẻ có class thành "prop: value; prop: value;" — nếu nguồn
+        // viết style liền (vd "margin:0;padding:0;") thì đưa về đúng kiểu đó.
+        if (prefersCompactStyle(rendered)) html = html.replace(/\sstyle="([^"]*)"/g, (_m, css) => ` style="${compactStyle(css)}"`);
     }
 
     const out = path.join(DIST, `${outName}.html`);
@@ -246,18 +290,23 @@ function resolveHtmlIncludes(file, stack = []) {
     }
 
     // fromRoot = true: đường dẫn tính từ email/; false: tương đối với file đang viết.
-    const include = (target, fromRoot) => {
+    // Nội dung ghép vào được thụt lề theo đúng vị trí dòng include, để bản build trông như viết tay.
+    const include = (target, fromRoot, offset, source) => {
         const included = fromRoot ? path.join(SRC, target) : path.resolve(path.dirname(file), target);
         if (!fs.existsSync(included)) {
             throw new Error(`Không tìm thấy file include "${target}" (trong ${rel(file)}) — đã tìm ở ${rel(included)}`);
         }
-        return resolveHtmlIncludes(included, [...stack, file]);
+        const content = resolveHtmlIncludes(included, [...stack, file]).replace(/\s+$/, '');
+        const lineStart = source.lastIndexOf('\n', offset - 1) + 1;
+        const before = source.slice(lineStart, offset);
+        const indent = /^[ \t]*$/.test(before) ? before : '';
+        return content.replace(/\n(?=[^\n])/g, `\n${indent}`);
     };
 
     return fs
         .readFileSync(file, 'utf8')
-        .replace(SSI_INCLUDE_RE, (_match, kind, _quote, target) => include(target, kind === 'virtual'))
-        .replace(AT_INCLUDE_RE, (_match, _quote, target) => include(target, target.startsWith('/')));
+        .replace(SSI_INCLUDE_RE, (_m, kind, _q, target, offset, source) => include(target, kind === 'virtual', offset, source))
+        .replace(AT_INCLUDE_RE, (_m, _q, target, offset, source) => include(target, target.startsWith('/'), offset, source));
 }
 
 /**
@@ -265,7 +314,7 @@ function resolveHtmlIncludes(file, stack = []) {
  * inline CSS (juice) + cảnh báo dung lượng/màu link như email viết bằng Pug.
  */
 function buildHtml(file, outName) {
-    return processHtml(resolveHtmlIncludes(file), outName);
+    return processHtml(resolveHtmlIncludes(file), outName, { format: false });
 }
 
 /**
