@@ -223,11 +223,35 @@ function buildPug(file, locals, data, outName) {
 }
 
 /**
- * Email viết thẳng bằng HTML (không qua Pug) — đọc nguyên file, vẫn được
+ * Ghép file HTML nhỏ vào email HTML bằng comment:
+ *   <!-- @include _header.html -->            đường dẫn tương đối với file đang viết
+ *   <!-- @include /partials/footer.html -->   bắt đầu bằng "/" = tính từ thư mục email/
+ * File được include cũng có thể include tiếp file khác. Đặt tên file nhỏ bắt đầu
+ * bằng "_" (vd _header.html) để nó không bị build thành 1 email riêng.
+ */
+const HTML_INCLUDE_RE = /<!--\s*@include\s+(["']?)([^"'\s]+)\1\s*-->/g;
+
+function resolveHtmlIncludes(file, stack = []) {
+    const rel = (f) => path.relative(SRC, f);
+    if (stack.includes(file)) {
+        throw new Error(`Include vòng lặp: ${[...stack, file].map(rel).join(' -> ')}`);
+    }
+    const html = fs.readFileSync(file, 'utf8');
+    return html.replace(HTML_INCLUDE_RE, (_match, _quote, target) => {
+        const included = target.startsWith('/') ? path.join(SRC, target) : path.resolve(path.dirname(file), target);
+        if (!fs.existsSync(included)) {
+            throw new Error(`Không tìm thấy file include "${target}" (trong ${rel(file)}) — đã tìm ở ${rel(included)}`);
+        }
+        return resolveHtmlIncludes(included, [...stack, file]);
+    });
+}
+
+/**
+ * Email viết thẳng bằng HTML (không qua Pug) — ghép các file include, rồi vẫn được
  * inline CSS (juice) + cảnh báo dung lượng/màu link như email viết bằng Pug.
  */
 function buildHtml(file, outName) {
-    return processHtml(fs.readFileSync(file, 'utf8'), outName);
+    return processHtml(resolveHtmlIncludes(file), outName);
 }
 
 /**
