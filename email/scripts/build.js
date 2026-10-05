@@ -223,27 +223,41 @@ function buildPug(file, locals, data, outName) {
 }
 
 /**
- * Ghép file HTML nhỏ vào email HTML bằng comment:
- *   <!-- @include _header.html -->            đường dẫn tương đối với file đang viết
- *   <!-- @include /partials/footer.html -->   bắt đầu bằng "/" = tính từ thư mục email/
+ * Ghép file HTML nhỏ vào email HTML bằng comment — 2 cú pháp, dùng lẫn được:
+ *
+ *   SSI (Server Side Includes, chuẩn của Apache/Nginx):
+ *     <!--#include file="_header.html" -->            tương đối với file đang viết
+ *     <!--#include virtual="/partials/footer.html" --> tính từ thư mục email/ (có hay không có "/" đầu đều được)
+ *
+ *   Cú pháp riêng của project (giữ để tương thích):
+ *     <!-- @include _header.html -->                   tương đối với file đang viết
+ *     <!-- @include /partials/footer.html -->          bắt đầu bằng "/" = tính từ thư mục email/
+ *
  * File được include cũng có thể include tiếp file khác. Đặt tên file nhỏ bắt đầu
  * bằng "_" (vd _header.html) để nó không bị build thành 1 email riêng.
  */
-const HTML_INCLUDE_RE = /<!--\s*@include\s+(["']?)([^"'\s]+)\1\s*-->/g;
+const SSI_INCLUDE_RE = /<!--#include\s+(file|virtual)\s*=\s*(["'])(.*?)\2\s*-->/g;
+const AT_INCLUDE_RE = /<!--\s*@include\s+(["']?)([^"'\s]+)\1\s*-->/g;
 
 function resolveHtmlIncludes(file, stack = []) {
     const rel = (f) => path.relative(SRC, f);
     if (stack.includes(file)) {
         throw new Error(`Include vòng lặp: ${[...stack, file].map(rel).join(' -> ')}`);
     }
-    const html = fs.readFileSync(file, 'utf8');
-    return html.replace(HTML_INCLUDE_RE, (_match, _quote, target) => {
-        const included = target.startsWith('/') ? path.join(SRC, target) : path.resolve(path.dirname(file), target);
+
+    // fromRoot = true: đường dẫn tính từ email/; false: tương đối với file đang viết.
+    const include = (target, fromRoot) => {
+        const included = fromRoot ? path.join(SRC, target) : path.resolve(path.dirname(file), target);
         if (!fs.existsSync(included)) {
             throw new Error(`Không tìm thấy file include "${target}" (trong ${rel(file)}) — đã tìm ở ${rel(included)}`);
         }
         return resolveHtmlIncludes(included, [...stack, file]);
-    });
+    };
+
+    return fs
+        .readFileSync(file, 'utf8')
+        .replace(SSI_INCLUDE_RE, (_match, kind, _quote, target) => include(target, kind === 'virtual'))
+        .replace(AT_INCLUDE_RE, (_match, _quote, target) => include(target, target.startsWith('/')));
 }
 
 /**

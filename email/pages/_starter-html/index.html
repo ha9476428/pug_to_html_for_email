@@ -8,8 +8,10 @@
     - Không có `theme`/`h`, block, mixin — tự viết style tay.
     - Không nạp `data.json` — muốn đổi nội dung thì sửa thẳng trong file.
     - Ảnh xem thử local: đặt vào `images/` cạnh file này, dùng `src="images/ten-anh.png"`.
-    - Ghép file HTML nhỏ: viết comment `@include` (xem ví dụ _footer.html ở cuối bảng bên dưới).
-        Đường dẫn tương đối với file đang viết, hoặc bắt đầu bằng "/" = tính từ thư mục email/.
+    - Ghép file HTML nhỏ bằng cú pháp SSI (xem ví dụ _footer.html ở cuối bảng bên dưới):
+        #include file="..."     đường dẫn tương đối với file đang viết
+        #include virtual="..."  đường dẫn tính từ thư mục email/ (vd /partials/footer.html)
+        (cú pháp cũ "@include" vẫn dùng được)
         Đặt tên file nhỏ bắt đầu bằng "_" để nó không bị build thành 1 email riêng.
     - CSS trong thẻ <style> dưới đây sẽ được inline vào từng thẻ khi build,
         thẻ <style> sẽ bị xoá khỏi <head> (không sót lại style nào ngoài inline).
@@ -52,7 +54,7 @@
                                     </table>
                                 </td>
                             </tr>
-                            <!-- @include _footer.html -->
+                            <!--#include file="_footer.html" -->
                         </table>
                     </td>
                 </tr>
